@@ -1,0 +1,21 @@
+package com.github.com.shii_park.shogi2vs2.model.domain;
+
+import com.github.com.shii_park.shogi2vs2.model.enums.Team;
+// import lombok.Data;
+// @Data
+
+public class Player {
+    private final String id;
+    private final Team team;
+    private boolean connected;
+
+    public Player(String id,Team team){
+        this.id=id;
+        this.team=team;
+        this.connected=true;
+    }
+
+    public boolean isConnected(){return connected;}
+    public void setConnected(boolean v){this.connected=v;}
+    public String getId(){return id;}
+}
