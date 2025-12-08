@@ -10,7 +10,7 @@ public class Piece {
     private Team team;
     private Position position;
     private boolean promoted; //成りの有無
-    private final boolean promotable;
+    private final boolean promotable; //成れるかどうか
 
     //ownerIdについては要検討
     public Piece(short id,PieceType type,Team team,Position position,boolean promotable){
