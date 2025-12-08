@@ -25,12 +25,6 @@ public class Position {
         return new Position(this.x + dir.dx, this.y + dir.dy);
     }
 
-    // 廃止予定
-    /*
-     * public Vector subtract(Position other){ return new Vector(this.x - other.x, this.y -
-     * other.y); }
-     */
-
     @Override
     public boolean equals(Object o) {
         if (this == o)
