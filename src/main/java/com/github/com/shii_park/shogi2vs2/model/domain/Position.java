@@ -1,45 +1,54 @@
 package com.github.com.shii_park.shogi2vs2.model.domain;
 
 import java.util.Objects;
+import com.github.com.shii_park.shogi2vs2.model.enums.Direction;
 
 public class Position {
     private final int x;
     private final int y;
 
-    public Position(int x, int y){
+    public Position(int x, int y) {
         this.x = x;
         this.y = y;
     }
 
-    public int getX(){ return x; }
-    public int getY(){ return y; }
-
-    // Position and Vector are regenerated on each move
-    public Position add(Vector v){
-        return new Position(this.x + v.getDx(), this.y + v.getDy());
+    public int getX() {
+        return x;
     }
 
-    public Vector subtract(Position other){
-        return new Vector(this.x - other.x, this.y - other.y);
+    public int getY() {
+        return y;
     }
 
-    // Determine if two Positions are at the same coordinates
+    // Positionは移動する度に再生成
+    public Position add(Direction dir) {
+        return new Position(this.x + dir.dx, this.y + dir.dy);
+    }
+
+    // 廃止予定
+    /*
+     * public Vector subtract(Position other){ return new Vector(this.x - other.x, this.y -
+     * other.y); }
+     */
+
     @Override
-    public boolean equals(Object o){
-        if (this == o) return true;
-        if (!(o instanceof Position)) return false;
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof Position))
+            return false;
         Position p = (Position) o;
         return x == p.x && y == p.y;
     }
 
     @Override
-    public int hashCode(){
+    public int hashCode() {
         return Objects.hash(x, y);
     }
 
     // Debug
     @Override
-    public String toString(){
+    public String toString() {
         return "(" + x + "," + y + ")";
     }
 }
