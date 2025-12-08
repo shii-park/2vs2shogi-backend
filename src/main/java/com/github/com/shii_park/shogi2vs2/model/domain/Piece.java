@@ -5,14 +5,14 @@ import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
 
 public class Piece {
-    private final String id;
+    private final Short id;
     private final PieceType type;
-    private final Team team;
+    private Team team;
     private Position position;
     private boolean promoted; //成りの有無
 
     //ownerIdについては要検討
-    public Piece(String id,PieceType type,Team team,Position position){
+    public Piece(short id,PieceType type,Team team,Position position){
         this.id=id;
         this.type=type;
         this.team=team;
@@ -20,7 +20,7 @@ public class Piece {
         this.promoted=false;
     }
 
-    public String getId(){return id;}
+    public short getId(){return id;}
     public Team getTeam(){return team;}
     public PieceType getType(){return type;}
     public Position getPosition(){return position;}
