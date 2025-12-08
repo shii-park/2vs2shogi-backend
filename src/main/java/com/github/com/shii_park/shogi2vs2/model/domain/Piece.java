@@ -10,14 +10,16 @@ public class Piece {
     private Team team;
     private Position position;
     private boolean promoted; //成りの有無
+    private final boolean promotable;
 
     //ownerIdについては要検討
-    public Piece(short id,PieceType type,Team team,Position position){
+    public Piece(short id,PieceType type,Team team,Position position,boolean promotable){
         this.id=id;
         this.type=type;
         this.team=team;
         this.position=position;
         this.promoted=false;
+        this.promotable=promotable;
     }
 
     public short getId(){return id;}
@@ -27,6 +29,7 @@ public class Piece {
     public void setPosition(Position p){this.position=p;}
     public boolean isPromoted(){return promoted;}
     public void setPromoted(boolean p){this.promoted=p;}
+    public boolean isPromotable(){return promotable;}
 
     //デバック用
     @Override
