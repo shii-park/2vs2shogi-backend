@@ -7,16 +7,23 @@ import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 import com.github.com.shii_park.shogi2vs2.model.enums.Direction;
 import com.github.com.shii_park.shogi2vs2.model.enums.MoveResult;
+import com.github.com.shii_park.shogi2vs2.model.enums.PieceType;
+import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
 public class Board {
     private final Map<Position, Stack<Piece>> pieces;
+    private final Map<Piece, Position> index;
+
+    private static final int BOARD_MIN = 1;
+    private static final int BOARD_MAX = 9;
 
     public Board(List<Piece> initialPieces) {
         this.pieces = new ConcurrentHashMap<>();
-
+        this.index = new ConcurrentHashMap<>();
         for (Piece p : initialPieces) {
-            pieces.computeIfAbsent(p.getPosition(), pos -> new Stack<>()).push(p);
+            pieces.computeIfAbsent(find(p), pos -> new Stack<>()).push(p);
         }
+
     }
 
     private Stack<Piece> getStack(Position pos) {
@@ -49,20 +56,59 @@ public class Board {
         return captured;
     }
 
-    public MoveResult moveOneStep(Piece piece,Direction dir){
-        Position newPos=piece.getPosition().add(dir);
-        if(/*盤面の外 */){
+    public void movePiece(Piece piece, Position newPos) {
+        Position old = index.get(piece);
+        Stack<Piece> stack = getStack(old);
+        if (stack.isEmpty()) {
+            return;
+        }
+        stack.remove(piece);
+        getStack(newPos).push(piece);
+        index.put(piece, newPos);
+    }
+
+    // public void removePiece(Position pos) {
+    // Stack<Piece> p = pieces.get(pos);
+    // if (p == null || p.isEmpty()) {
+    // return;
+    // }
+    // p.pop();
+    // }
+
+    public boolean isInsideBoard(Position pos) {
+        if (pos.x() > BOARD_MAX || pos.x() < BOARD_MIN) {
+            return false;
+        } else if (pos.y() > BOARD_MAX || pos.y() < BOARD_MIN) {
+            return false;
+        }
+        return true;
+    }
+
+    public Position find(Piece p) {
+        return index.get(p);
+    }
+
+    public MoveResult moveOneStep(Piece piece, Direction dir) {
+        Position newPos = find(piece).add(dir);
+        if (!isInsideBoard(newPos)) {
             return MoveResult.DROPPED_PIECE;
         }
-        Piece top=getTopPiece(newPos);
-        if (top!=null && top.getTeam()==piece.getTeam()){
+        Piece top = getTopPiece(newPos);
+        if (top != null && top.getTeam() == piece.getTeam()) {
             return MoveResult.BLOCKED_BY_ALLY;
         }
-        if (top!=null && top.getTeam()!=piece.getTeam()){
+        if (top != null && top.getTeam() != piece.getTeam()) {
             captureAll(newPos);
             return MoveResult.CAPUTURED;
         }
-        //ピース移動
+        // ピース移動
+        movePiece(piece, newPos);
+
         return MoveResult.MOVED;
+    }
+
+    public boolean isKingCaptured(Team team) {
+        // TODO:盤面上から team の王将が消えているか判定する
+        return false;
     }
 }
