@@ -78,7 +78,7 @@ public class Game {
             if (res1 == MoveResult.DROPPED_PIECE) {
                 c.Captured(m1.player().getTeam(), m1.piece());
                 break;
-            } else if (res1 == MoveResult.CAPUTURED) {
+            } else if (res1 == MoveResult.CAPTURED) {
                 c.Captured(m1.player().getTeam(), m1.piece());
                 break;
             } else if (res1 == MoveResult.BLOCKED_BY_ALLY) {
@@ -91,7 +91,7 @@ public class Game {
             if (res2 == MoveResult.DROPPED_PIECE) {
                 c.Captured(m2.player().getTeam(), m2.piece());
                 break;
-            } else if (res2 == MoveResult.CAPUTURED) {
+            } else if (res2 == MoveResult.CAPTURED) {
                 c.Captured(m1.player().getTeam(), m2.piece());
                 break;
             } else if (res2 == MoveResult.BLOCKED_BY_ALLY) {

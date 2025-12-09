@@ -99,7 +99,7 @@ public class Board {
         }
         if (top != null && top.getTeam() != piece.getTeam()) {
             captureAll(newPos);
-            return MoveResult.CAPUTURED;
+            return MoveResult.CAPTURED;
         }
         // ピース移動
         movePiece(piece, newPos);
