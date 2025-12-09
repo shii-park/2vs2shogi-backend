@@ -8,16 +8,13 @@ public class Piece {
     private final int id;
     private final PieceType type;
     private Team team;
-    private Position position;
     private boolean isPromoted; // 成りの有無
     private final boolean isPromotable; // 成れるかどうか
 
-    // ownerIdについては要検討
-    public Piece(int id, PieceType type, Team team, Position position, boolean promotable) {
+    public Piece(int id, PieceType type, Team team, boolean promotable) {
         this.id = id;
         this.type = type;
         this.team = team;
-        this.position = position;
         this.isPromoted = false;
         this.isPromotable = promotable;
     }
@@ -34,14 +31,6 @@ public class Piece {
         return type;
     }
 
-    public Position getPosition() {
-        return position;
-    }
-
-    public void setPosition(Position p) {
-        this.position = p;
-    }
-
     public boolean getPromoted() {
         return isPromoted;
     }
@@ -52,11 +41,5 @@ public class Piece {
 
     public boolean getPromotable() {
         return isPromotable;
-    }
-
-    // デバック用
-    @Override
-    public String toString() {
-        return "Piece{" + id + "," + type + ".team=" + team + ",pos=" + position + "}";
     }
 }
