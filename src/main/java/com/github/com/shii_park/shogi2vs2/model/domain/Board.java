@@ -7,7 +7,6 @@ import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
 import com.github.com.shii_park.shogi2vs2.model.enums.Direction;
 import com.github.com.shii_park.shogi2vs2.model.enums.MoveResult;
-import com.github.com.shii_park.shogi2vs2.model.enums.PieceType;
 import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
 public class Board {
@@ -17,11 +16,15 @@ public class Board {
     private static final int BOARD_MIN = 1;
     private static final int BOARD_MAX = 9;
 
-    public Board(List<Piece> initialPieces) {
+    public Board(Map<Piece, Position> initialPieces) {
         this.pieces = new ConcurrentHashMap<>();
-        this.index = new ConcurrentHashMap<>();
-        for (Piece p : initialPieces) {
-            pieces.computeIfAbsent(find(p), pos -> new Stack<>()).push(p);
+        this.index = new ConcurrentHashMap<>(initialPieces);
+
+        for (Map.Entry<Piece, Position> entry : initialPieces.entrySet()) {
+            Piece piece = entry.getKey();
+            Position pos = entry.getValue();
+
+            pieces.computeIfAbsent(pos, p -> new Stack<>()).push(piece);
         }
 
     }
@@ -66,14 +69,6 @@ public class Board {
         getStack(newPos).push(piece);
         index.put(piece, newPos);
     }
-
-    // public void removePiece(Position pos) {
-    // Stack<Piece> p = pieces.get(pos);
-    // if (p == null || p.isEmpty()) {
-    // return;
-    // }
-    // p.pop();
-    // }
 
     public boolean isInsideBoard(Position pos) {
         if (pos.x() > BOARD_MAX || pos.x() < BOARD_MIN) {
