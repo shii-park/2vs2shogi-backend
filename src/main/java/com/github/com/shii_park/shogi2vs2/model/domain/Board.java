@@ -59,6 +59,14 @@ public class Board {
         return captured;
     }
 
+    public boolean isTop(Piece piece) {
+        Stack<Piece> pieces = this.pieces.get(find(piece));
+        if (pieces != null || !pieces.empty()) {
+            return piece == pieces.peek();
+        }
+        return false;
+    }
+
     public void movePiece(Piece piece, Position newPos) {
         Position old = index.get(piece);
         Stack<Piece> stack = getStack(old);
@@ -94,6 +102,7 @@ public class Board {
         }
         if (top != null && top.getTeam() != piece.getTeam()) {
             captureAll(newPos);
+            movePiece(piece, newPos);
             return MoveResult.CAPTURED;
         }
         // ピース移動

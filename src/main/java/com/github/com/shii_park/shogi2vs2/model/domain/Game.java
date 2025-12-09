@@ -62,6 +62,9 @@ public class Game {
             handleTimeout();
             return;
         }
+        if (!board.isTop(piece)) {
+            return;
+        }
         // モックデータ: p1 飛車 上に3マス / p2 飛車 右に2マス
         CapturedPieces c = new CapturedPieces();
         Player p1 = players.get("p1");
@@ -82,6 +85,7 @@ public class Game {
                 c.Captured(m1.player().getTeam(), m1.piece());
                 break;
             } else if (res1 == MoveResult.BLOCKED_BY_ALLY) {
+                board.stackPiece(board.find(piece), piece);
                 break;
             }
         }
@@ -95,6 +99,7 @@ public class Game {
                 c.Captured(m1.player().getTeam(), m2.piece());
                 break;
             } else if (res2 == MoveResult.BLOCKED_BY_ALLY) {
+                board.stackPiece(board.find(piece), piece);
                 break;
             }
             if (isGameOver()) {
