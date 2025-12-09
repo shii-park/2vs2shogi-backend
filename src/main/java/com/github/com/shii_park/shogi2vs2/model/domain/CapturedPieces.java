@@ -10,6 +10,8 @@ public class CapturedPieces {
 
     public CapturedPieces() {
         piecesByTeam = new ConcurrentHashMap<>();
+        piecesByTeam.put(Team.A, null);
+        piecesByTeam.put(Team.B, null);
     }
 
     public void Captured(Team team, Piece piece) {
