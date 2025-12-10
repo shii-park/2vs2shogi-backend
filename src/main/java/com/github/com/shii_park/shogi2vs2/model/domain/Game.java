@@ -16,6 +16,8 @@ public class Game {
     private Team currentTeam;
     private volatile GameStatus status = GameStatus.WAITING;
     private long turnTimer = 0;
+    private boolean isKingCaptured;
+    private Team winnerTeam;
 
     private static final int TIMEOUT = 30;
 
@@ -25,6 +27,7 @@ public class Game {
         this.board = board;
         this.currentTeam = team;
         this.status = GameStatus.IN_PROGRESS;
+        this.isKingCaptured = false;
     }
 
     private void switchTurn() {
@@ -76,27 +79,32 @@ public class Game {
             MoveResult res1 = board.moveOneStep(m1.piece(), dir1);
             if (res1 == MoveResult.DROPPED) {
                 if (m1.player().getTeam() == Team.FIRST) {
-                    c.captured(Team.SECOND, m1.piece());
+                    isKingCaptured = c.captured(Team.SECOND, m1.piece());
                     break;
                 } else {
-                    c.captured(Team.FIRST, m1.piece());
+                    isKingCaptured = c.captured(Team.FIRST, m1.piece());
                     break;
                 }
 
             } else if (res1 == MoveResult.CAPTURED) {
-                c.captured(m1.player().getTeam(), m1.piece());
+                isKingCaptured = c.captured(m1.player().getTeam(), m1.piece());
                 break;
             } else if (res1 == MoveResult.STACKED) {
                 board.stackPiece(board.find(piece), piece);
                 break;
             }
+            if (isKingCaptured) {
+                winnerTeam = c.winnerTeam;
+                status = GameStatus.FINISHED;
+            }
         }
+
 
         for (Direction dir2 : m2.direction()) {
             MoveResult res2 = board.moveOneStep(m2.piece(), dir2);
             if (res2 == MoveResult.DROPPED) {
                 if (m2.player().getTeam() == Team.FIRST) {
-                    c.captured(Team.SECOND, m2.piece());
+                    isKingCaptured = c.captured(Team.SECOND, m2.piece());
                     break;
                 } else {
                     c.captured(Team.FIRST, m2.piece());
@@ -109,16 +117,17 @@ public class Game {
                 board.stackPiece(board.find(piece), piece);
                 break;
             }
-        }
-        if (isGameOver()) {
-            return;
+            if (isKingCaptured) {
+                winnerTeam = c.winnerTeam;
+                status = GameStatus.FINISHED;
+            }
         }
         nextTurn();
 
     }
 
-    public boolean isGameOver() {
+    // public boolean isGameOver() {
 
-        return false;
-    }
+    // return false;
+    // }
 }

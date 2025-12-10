@@ -10,6 +10,7 @@ import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
 public class CapturedPieces {
     Map<Team, List<Piece>> capturedPieces;
+    Team winnerTeam;
 
     public CapturedPieces() {
         capturedPieces = new ConcurrentHashMap<>();
@@ -21,12 +22,14 @@ public class CapturedPieces {
         return capturedPieces.get(team);
     }
 
-    public void captured(Team team, Piece piece) {
+    public boolean captured(Team team, Piece piece) {
         if (piece.getType() == PieceType.KING) {
-            // ゲーム終了
+            winnerTeam = team;
+            return true;
         }
         capturedPieces.get(team).add(piece);
         piece.setPromoted(false);
         piece.setTeam(team);
+        return false;
     }
 }
