@@ -1,10 +1,6 @@
 package com.github.com.shii_park.shogi2vs2.model.domain;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.HashMap;
 import java.util.List;
 import com.github.com.shii_park.shogi2vs2.model.enums.MoveResult;
@@ -32,7 +28,7 @@ public class Game {
     }
 
     private void switchTurn() {
-        this.currentTeam = (this.currentTeam == Team.A) ? Team.B : Team.A;
+        this.currentTeam = (this.currentTeam == Team.FIRST) ? Team.SECOND : Team.FIRST;
     }
 
     private void nextTurn() {
@@ -111,11 +107,11 @@ public class Game {
     }
 
     public boolean isGameOver() {
-        if (board.isKingCaptured(Team.A)) {
+        if (board.isKingCaptured(Team.FIRST)) {
             status = GameStatus.FINISHED;
             return true;
         }
-        if (board.isKingCaptured(Team.B)) {
+        if (board.isKingCaptured(Team.SECOND)) {
             status = GameStatus.FINISHED;
             return true;
         }
