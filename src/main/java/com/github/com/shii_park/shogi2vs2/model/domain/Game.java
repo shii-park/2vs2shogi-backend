@@ -74,11 +74,11 @@ public class Game {
 
         for (Direction dir1 : m1.direction()) {
             MoveResult res1 = board.moveOneStep(m1.piece(), dir1);
-            if (res1 == MoveResult.DROPPED_PIECE) {
-                c.Captured(m1.player().getTeam(), m1.piece());
+            if (res1 == MoveResult.DROPPED) {
+                c.captured(m1.player().getTeam(), m1.piece());
                 break;
             } else if (res1 == MoveResult.CAPTURED) {
-                c.Captured(m1.player().getTeam(), m1.piece());
+                c.captured(m1.player().getTeam(), m1.piece());
                 break;
             } else if (res1 == MoveResult.STACKED) {
                 board.stackPiece(board.find(piece), piece);
@@ -88,11 +88,11 @@ public class Game {
 
         for (Direction dir2 : m2.direction()) {
             MoveResult res2 = board.moveOneStep(m2.piece(), dir2);
-            if (res2 == MoveResult.DROPPED_PIECE) {
-                c.Captured(m2.player().getTeam(), m2.piece());
+            if (res2 == MoveResult.DROPPED) {
+                c.captured(m2.player().getTeam(), m2.piece());
                 break;
             } else if (res2 == MoveResult.CAPTURED) {
-                c.Captured(m1.player().getTeam(), m2.piece());
+                c.captured(m1.player().getTeam(), m2.piece());
                 break;
             } else if (res2 == MoveResult.STACKED) {
                 board.stackPiece(board.find(piece), piece);
@@ -107,14 +107,7 @@ public class Game {
     }
 
     public boolean isGameOver() {
-        if (board.isKingCaptured(Team.FIRST)) {
-            status = GameStatus.FINISHED;
-            return true;
-        }
-        if (board.isKingCaptured(Team.SECOND)) {
-            status = GameStatus.FINISHED;
-            return true;
-        }
+
         return false;
     }
 }
