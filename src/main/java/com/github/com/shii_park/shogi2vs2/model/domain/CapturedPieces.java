@@ -26,6 +26,7 @@ public class CapturedPieces {
             // ゲーム終了
         }
         capturedPieces.get(team).add(piece);
+        piece.setPromoted(false);
         piece.setTeam(team);
     }
 }
