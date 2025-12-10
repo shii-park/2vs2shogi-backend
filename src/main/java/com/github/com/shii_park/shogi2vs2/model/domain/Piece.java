@@ -35,6 +35,10 @@ public class Piece {
         return isPromoted;
     }
 
+    public void setTeam(Team t) {
+        this.team = t;
+    }
+
     public void setPromoted(boolean p) {
         this.isPromoted = p;
     }

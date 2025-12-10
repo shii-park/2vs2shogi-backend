@@ -91,6 +91,15 @@ public class Board {
         return index.get(p);
     }
 
+    public void changeTeam(Piece p) {
+        if (p.getTeam() == Team.FIRST) {
+            p.setTeam(Team.SECOND);
+        } else if (p.getTeam() == Team.SECOND) {
+            p.setTeam(Team.FIRST);
+        }
+
+    }
+
     public MoveResult moveOneStep(Piece piece, Direction dir) {
         Position newPos = find(piece).add(dir);
         if (!isInsideBoard(newPos)) {
