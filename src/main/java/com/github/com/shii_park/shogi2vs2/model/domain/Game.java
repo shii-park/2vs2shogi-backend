@@ -75,8 +75,14 @@ public class Game {
         for (Direction dir1 : m1.direction()) {
             MoveResult res1 = board.moveOneStep(m1.piece(), dir1);
             if (res1 == MoveResult.DROPPED) {
-                c.captured(m1.player().getTeam(), m1.piece());
-                break;
+                if (m1.player().getTeam() == Team.FIRST) {
+                    c.captured(Team.SECOND, m1.piece());
+                    break;
+                } else {
+                    c.captured(Team.FIRST, m1.piece());
+                    break;
+                }
+
             } else if (res1 == MoveResult.CAPTURED) {
                 c.captured(m1.player().getTeam(), m1.piece());
                 break;
@@ -89,20 +95,25 @@ public class Game {
         for (Direction dir2 : m2.direction()) {
             MoveResult res2 = board.moveOneStep(m2.piece(), dir2);
             if (res2 == MoveResult.DROPPED) {
-                c.captured(m2.player().getTeam(), m2.piece());
-                break;
+                if (m2.player().getTeam() == Team.FIRST) {
+                    c.captured(Team.SECOND, m2.piece());
+                    break;
+                } else {
+                    c.captured(Team.FIRST, m2.piece());
+                    break;
+                }
             } else if (res2 == MoveResult.CAPTURED) {
-                c.captured(m1.player().getTeam(), m2.piece());
+                c.captured(m2.player().getTeam(), m2.piece());
                 break;
             } else if (res2 == MoveResult.STACKED) {
                 board.stackPiece(board.find(piece), piece);
                 break;
             }
-            if (isGameOver()) {
-                return;
-            }
-            nextTurn();
         }
+        if (isGameOver()) {
+            return;
+        }
+        nextTurn();
 
     }
 
