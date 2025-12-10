@@ -98,7 +98,7 @@ public class Board {
         }
         Piece top = getTopPiece(newPos);
         if (top != null && top.getTeam() == piece.getTeam()) {
-            return MoveResult.BLOCKED_BY_ALLY;
+            return MoveResult.STACKED;
         }
         if (top != null && top.getTeam() != piece.getTeam()) {
             captureAll(newPos);

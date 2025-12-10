@@ -80,7 +80,7 @@ public class Game {
             } else if (res1 == MoveResult.CAPTURED) {
                 c.Captured(m1.player().getTeam(), m1.piece());
                 break;
-            } else if (res1 == MoveResult.BLOCKED_BY_ALLY) {
+            } else if (res1 == MoveResult.STACKED) {
                 board.stackPiece(board.find(piece), piece);
                 break;
             }
@@ -94,7 +94,7 @@ public class Game {
             } else if (res2 == MoveResult.CAPTURED) {
                 c.Captured(m1.player().getTeam(), m2.piece());
                 break;
-            } else if (res2 == MoveResult.BLOCKED_BY_ALLY) {
+            } else if (res2 == MoveResult.STACKED) {
                 board.stackPiece(board.find(piece), piece);
                 break;
             }
