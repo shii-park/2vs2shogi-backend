@@ -12,6 +12,7 @@ import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 public class Board {
     private final Map<Position, Stack<Piece>> pieces;
     private final Map<Piece, Position> index;
+    private final CapturedPieces capturedPieces;
 
     private static final int BOARD_MIN = 1;
     private static final int BOARD_MAX = 9;
@@ -26,6 +27,8 @@ public class Board {
 
             pieces.computeIfAbsent(pos, p -> new Stack<>()).push(piece);
         }
+
+        this.capturedPieces = new CapturedPieces();
 
     }
 
@@ -55,6 +58,15 @@ public class Board {
 
         List<Piece> captured = new ArrayList<>(stack);
         pieces.remove(pos);
+
+        for (Piece p : captured) {
+            if (p.getTeam() == Team.FIRST) {
+                capturedPieces.captured(Team.SECOND, p);
+            } else if (p.getTeam() == Team.SECOND) {
+                capturedPieces.captured(Team.FIRST, p);
+            }
+            index.remove(p);
+        }
 
         return captured;
     }
@@ -103,7 +115,7 @@ public class Board {
     public MoveResult moveOneStep(Piece piece, Direction dir) {
         Position newPos = find(piece).add(dir);
         if (!isInsideBoard(newPos)) {
-            return MoveResult.DROPPED_PIECE;
+            return MoveResult.DROPPED;
         }
         Piece top = getTopPiece(newPos);
         if (top != null && top.getTeam() == piece.getTeam()) {
@@ -118,10 +130,5 @@ public class Board {
         movePiece(piece, newPos);
 
         return MoveResult.MOVED;
-    }
-
-    public boolean isKingCaptured(Team team) {
-        // TODO:盤面上から team の王将が消えているか判定する
-        return false;
     }
 }

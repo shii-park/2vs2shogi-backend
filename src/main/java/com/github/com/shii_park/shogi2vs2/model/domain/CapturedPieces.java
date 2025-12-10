@@ -1,20 +1,31 @@
 package com.github.com.shii_park.shogi2vs2.model.domain;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import com.github.com.shii_park.shogi2vs2.model.enums.PieceType;
 import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
 public class CapturedPieces {
-    Map<Team, List<Piece>> piecesByTeam;
+    Map<Team, List<Piece>> capturedPieces;
 
     public CapturedPieces() {
-        piecesByTeam = new ConcurrentHashMap<>();
-        piecesByTeam.put(Team.FIRST, null);
-        piecesByTeam.put(Team.SECOND, null);
+        capturedPieces = new ConcurrentHashMap<>();
+        capturedPieces.put(Team.FIRST, Collections.synchronizedList(new ArrayList<>()));
+        capturedPieces.put(Team.SECOND, Collections.synchronizedList(new ArrayList<>()));
     }
 
-    public void Captured(Team team, Piece piece) {
-        piecesByTeam.get(team).add(piece);
+    public List<Piece> getCapturedPieces(Team team) {
+        return capturedPieces.get(team);
+    }
+
+    public void captured(Team team, Piece piece) {
+        if (piece.getType() == PieceType.KING) {
+            // ゲーム終了
+        }
+        capturedPieces.get(team).add(piece);
+        piece.setTeam(team);
     }
 }
