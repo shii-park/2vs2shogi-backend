@@ -73,7 +73,7 @@ public class Board {
 
     public boolean isTop(Piece piece) {
         Stack<Piece> pieces = this.pieces.get(find(piece));
-        if (pieces != null || !pieces.empty()) {
+        if (pieces != null && !pieces.empty()) {
             return piece == pieces.peek();
         }
         return false;
