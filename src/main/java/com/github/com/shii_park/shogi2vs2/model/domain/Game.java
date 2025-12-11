@@ -30,18 +30,6 @@ public class Game {
         this.turnManager = new TurnManager(firstTeam);
     }
 
-
-
-    // public void startTurnTimer() {
-    // this.turnTimer = System.currentTimeMillis();
-    // }
-
-
-
-    // private void resetTimer() {
-    // this.turnTimer = System.currentTimeMillis();
-    // }
-
     private void handleTimeout() {
         turnManager.nextTurn();
     }
