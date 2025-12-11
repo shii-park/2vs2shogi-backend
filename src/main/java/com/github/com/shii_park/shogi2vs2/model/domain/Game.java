@@ -13,55 +13,41 @@ public class Game {
     private final String gameId;
     private final Map<String, Player> players = new HashMap<>();
     private final Board board;
-    private volatile int turnNumber = 0;
-    private Team currentTeam;
     private volatile GameStatus status = GameStatus.WAITING;
-    private long turnTimer = 0;
     private boolean isKingCaptured;
     private Team winnerTeam;
     private CapturedPieces capturedPieces;
+    private TurnManager turnManager;
 
 
-    private static final int TIMEOUT = 30;
-
-    public Game(String gameId, List<Player> playersList, Board board, Team team) {
+    public Game(String gameId, List<Player> playersList, Board board, Team firstTeam) {
         this.gameId = gameId;
         playersList.forEach(p -> players.put(p.getId(), p));
         this.board = board;
-        this.currentTeam = team;
         this.status = GameStatus.IN_PROGRESS;
         this.isKingCaptured = false;
         this.capturedPieces = board.getCapturedPieces();
+        this.turnManager = new TurnManager(firstTeam);
     }
 
-    private void switchTurn() {
-        this.currentTeam = (this.currentTeam == Team.FIRST) ? Team.SECOND : Team.FIRST;
-    }
 
-    private void nextTurn() {
-        turnNumber++;
-        switchTurn();
-        resetTimer();
-    }
 
-    public void startTurnTimer() {
-        this.turnTimer = System.currentTimeMillis();
-    }
+    // public void startTurnTimer() {
+    // this.turnTimer = System.currentTimeMillis();
+    // }
 
-    public boolean isTimeout() {
-        return (System.currentTimeMillis() - turnTimer) >= TIMEOUT * 1000;
-    }
 
-    private void resetTimer() {
-        this.turnTimer = System.currentTimeMillis();
-    }
+
+    // private void resetTimer() {
+    // this.turnTimer = System.currentTimeMillis();
+    // }
 
     private void handleTimeout() {
-        nextTurn();
+        turnManager.nextTurn();
     }
 
     public void applyMoves(/* PlayerMove m1,PlayerMove m2, */Piece piece) {
-        if (isTimeout()) {
+        if (turnManager.isTimeout()) {
             handleTimeout();
             return;
         }
@@ -126,7 +112,7 @@ public class Game {
                 status = GameStatus.FINISHED;
             }
         }
-        nextTurn();
+        turnManager.nextTurn();
 
     }
 
