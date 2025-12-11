@@ -32,6 +32,10 @@ public class Board {
 
     }
 
+    public CapturedPieces getCapturedPieces() {
+        return capturedPieces;
+    }
+
     private Stack<Piece> getStack(Position pos) {
         return pieces.computeIfAbsent(pos, k -> new Stack<>());
     }

@@ -19,6 +19,8 @@ public class Game {
     private long turnTimer = 0;
     private boolean isKingCaptured;
     private Team winnerTeam;
+    private CapturedPieces capturedPieces;
+
 
     private static final int TIMEOUT = 30;
 
@@ -29,6 +31,7 @@ public class Game {
         this.currentTeam = team;
         this.status = GameStatus.IN_PROGRESS;
         this.isKingCaptured = false;
+        this.capturedPieces = board.getCapturedPieces();
     }
 
     private void switchTurn() {
@@ -66,7 +69,6 @@ public class Game {
             return;
         }
         // モックデータ: p1 飛車 上に3マス / p2 飛車 右に2マス
-        CapturedPieces c = new CapturedPieces();
         Player p1 = players.get("p1");
         Player p2 = players.get("p2");
 
@@ -81,22 +83,22 @@ public class Game {
             MoveResult res1 = board.moveOneStep(m1.piece(), dir1);
             if (res1 == MoveResult.DROPPED) {
                 if (m1.player().getTeam() == Team.FIRST) {
-                    isKingCaptured = c.captured(Team.SECOND, m1.piece());
+                    isKingCaptured = capturedPieces.captured(Team.SECOND, m1.piece());
                     break;
                 } else {
-                    isKingCaptured = c.captured(Team.FIRST, m1.piece());
+                    isKingCaptured = capturedPieces.captured(Team.FIRST, m1.piece());
                     break;
                 }
 
             } else if (res1 == MoveResult.CAPTURED) {
-                isKingCaptured = c.captured(m1.player().getTeam(), m1.piece());
+                isKingCaptured = capturedPieces.captured(m1.player().getTeam(), m1.piece());
                 break;
             } else if (res1 == MoveResult.STACKED) {
                 board.stackPiece(board.find(piece), piece);
                 break;
             }
             if (isKingCaptured) {
-                winnerTeam = c.winnerTeam;
+                winnerTeam = capturedPieces.winnerTeam;
                 status = GameStatus.FINISHED;
             }
         }
@@ -106,21 +108,21 @@ public class Game {
             MoveResult res2 = board.moveOneStep(m2.piece(), dir2);
             if (res2 == MoveResult.DROPPED) {
                 if (m2.player().getTeam() == Team.FIRST) {
-                    isKingCaptured = c.captured(Team.SECOND, m2.piece());
+                    isKingCaptured = capturedPieces.captured(Team.SECOND, m2.piece());
                     break;
                 } else {
-                    c.captured(Team.FIRST, m2.piece());
+                    capturedPieces.captured(Team.FIRST, m2.piece());
                     break;
                 }
             } else if (res2 == MoveResult.CAPTURED) {
-                c.captured(m2.player().getTeam(), m2.piece());
+                capturedPieces.captured(m2.player().getTeam(), m2.piece());
                 break;
             } else if (res2 == MoveResult.STACKED) {
                 board.stackPiece(board.find(piece), piece);
                 break;
             }
             if (isKingCaptured) {
-                winnerTeam = c.winnerTeam;
+                winnerTeam = capturedPieces.winnerTeam;
                 status = GameStatus.FINISHED;
             }
         }
