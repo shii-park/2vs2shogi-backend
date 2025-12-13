@@ -2,7 +2,6 @@ package com.github.com.shii_park.shogi2vs2.model.domain;
 
 import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
-
 public class Player {
     private final String id;
     private final Team team;

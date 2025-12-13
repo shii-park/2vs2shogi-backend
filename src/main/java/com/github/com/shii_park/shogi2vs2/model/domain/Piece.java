@@ -31,7 +31,7 @@ public class Piece {
         return type;
     }
 
-    public boolean getPromoted() {
+    public boolean isPromoted() {
         return isPromoted;
     }
 
@@ -43,7 +43,7 @@ public class Piece {
         this.isPromoted = p;
     }
 
-    public boolean getPromotable() {
+    public boolean isPromotable() {
         return isPromotable;
     }
 }
