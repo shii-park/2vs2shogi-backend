@@ -14,8 +14,9 @@ public class Board {
     private final Map<Piece, Position> index;
     private final CapturedPieces capturedPieces;
 
-    private static final int BOARD_MIN = 1;
-    private static final int BOARD_MAX = 9;
+    // 盤面の左下が(0,0)、右上が(8,8)
+    private static final int BOARD_MIN = 0;
+    private static final int BOARD_MAX = 8;
 
     public Board(Map<Piece, Position> initialPieces) {
         this.pieces = new ConcurrentHashMap<>();
@@ -27,9 +28,7 @@ public class Board {
 
             pieces.computeIfAbsent(pos, p -> new Stack<>()).push(piece);
         }
-
         this.capturedPieces = new CapturedPieces();
-
     }
 
     public CapturedPieces getCapturedPieces() {
@@ -43,7 +42,6 @@ public class Board {
     public Piece getTopPiece(Position pos) {
         Stack<Piece> s = pieces.get(pos);
         return (s == null || s.isEmpty()) ? null : s.peek();
-
     }
 
     public List<Piece> getAllPiecesAt(Position pos) {
@@ -71,7 +69,6 @@ public class Board {
             }
             index.remove(p);
         }
-
         return captured;
     }
 
@@ -113,7 +110,6 @@ public class Board {
         } else if (p.getTeam() == Team.SECOND) {
             p.setTeam(Team.FIRST);
         }
-
     }
 
     public MoveResult moveOneStep(Piece piece, Direction dir) {
