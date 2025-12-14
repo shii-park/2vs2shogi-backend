@@ -105,10 +105,13 @@ public class Board {
     }
 
     public void changeTeam(Piece p) {
-        if (p.getTeam() == Team.FIRST) {
-            p.setTeam(Team.SECOND);
-        } else if (p.getTeam() == Team.SECOND) {
-            p.setTeam(Team.FIRST);
+        switch (p.getTeam()) {
+            case Team.FIRST:
+                p.setTeam(Team.SECOND);
+                break;
+            case Team.SECOND:
+                p.setTeam(Team.FIRST);
+                break;
         }
     }
 
