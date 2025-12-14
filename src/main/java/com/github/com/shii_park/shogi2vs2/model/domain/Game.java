@@ -19,7 +19,6 @@ public class Game {
     private CapturedPieces capturedPieces;
     private TurnManager turnManager;
 
-
     public Game(String gameId, List<Player> playersList, Board board, Team firstTeam) {
         this.gameId = gameId;
         playersList.forEach(p -> players.put(p.getId(), p));
@@ -34,7 +33,9 @@ public class Game {
         turnManager.nextTurn();
     }
 
-    public void applyMoves(/* PlayerMove m1,PlayerMove m2, */Piece piece) {
+    // NOTE: 現在はモックデータを使用している
+    // NOTE: 本来は引数として(PlayerMove m1,PlayerMove m2,Piece piece)を受け取る必要がある
+    public void applyMoves(Piece piece) {
         if (turnManager.isTimeout()) {
             handleTimeout();
             return;
@@ -51,7 +52,6 @@ public class Game {
 
         PlayerMove m2 =
                 new PlayerMove(p2, piece, List.of(Direction.RIGHT, Direction.RIGHT), Instant.now());
-
 
         for (Direction dir1 : m1.direction()) {
             MoveResult res1 = board.moveOneStep(m1.piece(), dir1);
@@ -76,7 +76,6 @@ public class Game {
                 status = GameStatus.FINISHED;
             }
         }
-
 
         for (Direction dir2 : m2.direction()) {
             MoveResult res2 = board.moveOneStep(m2.piece(), dir2);
@@ -103,9 +102,4 @@ public class Game {
         turnManager.nextTurn();
 
     }
-
-    // public boolean isGameOver() {
-
-    // return false;
-    // }
 }
