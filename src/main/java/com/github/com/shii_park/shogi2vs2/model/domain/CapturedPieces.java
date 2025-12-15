@@ -22,14 +22,13 @@ public class CapturedPieces {
         return capturedPieces.get(team);
     }
 
-    public boolean captured(Team team, Piece piece) {
+    // TODO: winnerTeamを決める処理を別途追加
+    public void isCaptured(Team team, Piece piece) {
         if (piece.getType() == PieceType.KING) {
             winnerTeam = team;
-            return true;
         }
         capturedPieces.get(team).add(piece);
         piece.setPromoted(false);
         piece.setTeam(team);
-        return false;
     }
 }
