@@ -63,9 +63,9 @@ public class Board {
 
         for (Piece p : captured) {
             if (p.getTeam() == Team.FIRST) {
-                capturedPieces.captured(Team.SECOND, p);
+                capturedPieces.isCaptured(Team.SECOND, p);
             } else if (p.getTeam() == Team.SECOND) {
-                capturedPieces.captured(Team.FIRST, p);
+                capturedPieces.isCaptured(Team.FIRST, p);
             }
             index.remove(p);
         }
