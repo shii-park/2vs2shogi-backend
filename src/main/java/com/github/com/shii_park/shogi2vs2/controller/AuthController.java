@@ -1,12 +1,18 @@
 package com.github.com.shii_park.shogi2vs2.controller;
 
-import com.github.com.shii_park.shogi2vs2.dto.auth.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.web.bind.annotation.*;
-
 import java.time.Duration;
 import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.github.com.shii_park.shogi2vs2.dto.auth.LoginRequest;
+import com.github.com.shii_park.shogi2vs2.dto.auth.LoginResponse;
 
 @RestController
 @RequestMapping("/api/auth")//URL
@@ -18,10 +24,10 @@ public class AuthController {
 
     @PostMapping("/login")
     public LoginResponse login(@RequestBody LoginRequest request){
-        String userID = UUID.randomUUID().toString();
+        String userId = UUID.randomUUID().toString(); //ランダムなユーザーID生成
 
         redisTemplate.opsForValue().set(
-            "user:" + userID,
+            "user:" + userId,
             request.getUsername(),
             Duration.ofHours(2)
         );
