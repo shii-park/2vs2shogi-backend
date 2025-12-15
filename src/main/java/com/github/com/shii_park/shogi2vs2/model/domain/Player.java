@@ -30,4 +30,8 @@ public class Player {
     public Team getTeam() {
         return team;
     }
+
+    public void setResign(boolean v) {
+        this.resign = v;
+    }
 }
