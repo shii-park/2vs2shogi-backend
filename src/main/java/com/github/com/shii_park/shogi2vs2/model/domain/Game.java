@@ -54,10 +54,10 @@ public class Game {
             MoveResult res1 = board.moveOneStep(m1.piece(), dir1);
             if (res1 == MoveResult.DROPPED) {
                 if (m1.player().getTeam() == Team.FIRST) {
-                    capturedPieces.isCaptured(Team.SECOND, m1.piece());
+                    capturedPieces.capturedPiece(Team.SECOND, m1.piece());
                     break;
                 } else {
-                    capturedPieces.isCaptured(Team.FIRST, m1.piece());
+                    capturedPieces.capturedPiece(Team.FIRST, m1.piece());
                     break;
                 }
 
@@ -77,10 +77,10 @@ public class Game {
             MoveResult res2 = board.moveOneStep(m2.piece(), dir2);
             if (res2 == MoveResult.DROPPED) {
                 if (m2.player().getTeam() == Team.FIRST) {
-                    capturedPieces.isCaptured(Team.SECOND, m2.piece());
+                    capturedPieces.capturedPiece(Team.SECOND, m2.piece());
                     break;
                 } else {
-                    capturedPieces.isCaptured(Team.FIRST, m2.piece());
+                    capturedPieces.capturedPiece(Team.FIRST, m2.piece());
                     break;
                 }
             } else if (res2 == MoveResult.CAPTURED) {

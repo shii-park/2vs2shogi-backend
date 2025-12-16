@@ -62,7 +62,7 @@ public class Board {
         pieces.remove(pos);
 
         for (Piece p : captured) {
-            capturedPieces.isCaptured(capturingteam, p);
+            capturedPieces.capturedPiece(capturingteam, p);
             index.remove(p);
         }
         return captured;

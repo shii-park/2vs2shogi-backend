@@ -29,7 +29,7 @@ public class CapturedPieces {
     }
 
     // TODO: winnerTeamを決める処理を別途追加
-    public void isCaptured(Team team, Piece piece) {
+    public void capturedPiece(Team team, Piece piece) {
         if (piece.getType() == PieceType.KING) {
             winnerTeam = Optional.of(team);
         }
