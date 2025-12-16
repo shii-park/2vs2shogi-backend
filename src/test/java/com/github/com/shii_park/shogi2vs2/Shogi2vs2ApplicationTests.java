@@ -1,4 +1,4 @@
-package com.github.shii_park.shogi2vs2;
+package com.github.com.shii_park.shogi2vs2;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
