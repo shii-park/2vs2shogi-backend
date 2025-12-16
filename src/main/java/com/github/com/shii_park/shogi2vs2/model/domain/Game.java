@@ -14,7 +14,6 @@ public class Game {
     private final Map<String, Player> players = new HashMap<>();
     private final Board board;
     private volatile GameStatus status = GameStatus.WAITING;
-    private boolean isKingCaptured;
     private Team winnerTeam;
     private CapturedPieces capturedPieces;
     private TurnManager turnManager;
@@ -24,7 +23,6 @@ public class Game {
         playersList.forEach(p -> players.put(p.getId(), p));
         this.board = board;
         this.status = GameStatus.IN_PROGRESS;
-        this.isKingCaptured = false;
         this.capturedPieces = board.getCapturedPieces();
         this.turnManager = new TurnManager(firstTeam);
     }
@@ -50,8 +48,7 @@ public class Game {
         PlayerMove m1 = new PlayerMove(p1, piece, List.of(Direction.UP, Direction.UP, Direction.UP),
                 Instant.now());
 
-        PlayerMove m2 =
-                new PlayerMove(p2, piece, List.of(Direction.RIGHT, Direction.RIGHT), Instant.now());
+        PlayerMove m2 = new PlayerMove(p2, piece, List.of(Direction.RIGHT, Direction.RIGHT), Instant.now());
 
         for (Direction dir1 : m1.direction()) {
             MoveResult res1 = board.moveOneStep(m1.piece(), dir1);
@@ -71,10 +68,10 @@ public class Game {
                 board.stackPiece(board.find(piece), piece);
                 break;
             }
-            if (isKingCaptured) {
-                winnerTeam = capturedPieces.winnerTeam;
+            capturedPieces.getWinnerTeam().ifPresent(team -> {
+                winnerTeam = team;
                 status = GameStatus.FINISHED;
-            }
+            });
         }
 
         for (Direction dir2 : m2.direction()) {
@@ -94,10 +91,10 @@ public class Game {
                 board.stackPiece(board.find(piece), piece);
                 break;
             }
-            if (isKingCaptured) {
-                winnerTeam = capturedPieces.winnerTeam;
+            capturedPieces.getWinnerTeam().ifPresent(team -> {
+                winnerTeam = team;
                 status = GameStatus.FINISHED;
-            }
+            });
         }
         turnManager.nextTurn();
 
