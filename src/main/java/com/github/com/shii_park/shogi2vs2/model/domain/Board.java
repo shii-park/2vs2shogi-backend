@@ -122,6 +122,7 @@ public class Board {
         }
         Piece top = getTopPiece(newPos);
         if (top != null && top.getTeam() == piece.getTeam()) {
+            movePiece(piece, newPos);
             return MoveResult.STACKED;
         }
         if (top != null && top.getTeam() != piece.getTeam()) {
