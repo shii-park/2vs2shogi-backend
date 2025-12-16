@@ -53,7 +53,7 @@ public class Board {
         getStack(pos).push(piece);
     }
 
-    public List<Piece> captureAll(Position pos) {
+    public List<Piece> captureAll(Position pos, Team capturingteam) {
         Stack<Piece> stack = pieces.get(pos);
         if (stack == null)
             return List.of();
@@ -62,11 +62,7 @@ public class Board {
         pieces.remove(pos);
 
         for (Piece p : captured) {
-            if (p.getTeam() == Team.FIRST) {
-                capturedPieces.isCaptured(Team.SECOND, p);
-            } else if (p.getTeam() == Team.SECOND) {
-                capturedPieces.isCaptured(Team.FIRST, p);
-            }
+            capturedPieces.isCaptured(capturingteam, p);
             index.remove(p);
         }
         return captured;
@@ -126,7 +122,7 @@ public class Board {
             return MoveResult.STACKED;
         }
         if (top != null && top.getTeam() != piece.getTeam()) {
-            captureAll(newPos);
+            captureAll(newPos, piece.getTeam());
             movePiece(piece, newPos);
             return MoveResult.CAPTURED;
         }
