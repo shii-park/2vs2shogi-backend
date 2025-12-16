@@ -1,6 +1,8 @@
-package com.github.com.shii_park.shogi2vs2.model.domain;
+// package com.github.com.shii_park.shogi2vs2.model.domain;
 
-public class Board {
-    private final Map<Position,Piece>board;
-    
-}
+// import java.util.Map;
+
+// public class Board {
+// private final Map<Position,Piece>board;
+
+// }
