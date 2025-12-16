@@ -62,7 +62,6 @@ public class Game {
                 }
 
             } else if (res1 == MoveResult.CAPTURED) {
-                capturedPieces.isCaptured(m1.player().getTeam(), m1.piece());
                 break;
             } else if (res1 == MoveResult.STACKED) {
                 board.stackPiece(board.find(piece), piece);
@@ -85,7 +84,6 @@ public class Game {
                     break;
                 }
             } else if (res2 == MoveResult.CAPTURED) {
-                capturedPieces.isCaptured(m2.player().getTeam(), m2.piece());
                 break;
             } else if (res2 == MoveResult.STACKED) {
                 board.stackPiece(board.find(piece), piece);
