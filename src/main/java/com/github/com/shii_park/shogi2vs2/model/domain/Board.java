@@ -15,8 +15,8 @@ public class Board {
     private final CapturedPieces capturedPieces;
 
     // 盤面の左下が(0,0)、右上が(8,8)
-    private static final int BOARD_MIN = 0;
-    private static final int BOARD_MAX = 8;
+    private static final int BOARD_MIN = 1;
+    private static final int BOARD_MAX = 9;
 
     public Board(Map<Piece, Position> initialPieces) {
         this.pieces = new ConcurrentHashMap<>();
@@ -31,6 +31,7 @@ public class Board {
         this.capturedPieces = new CapturedPieces();
     }
 
+    /** */
     public CapturedPieces getCapturedPieces() {
         return capturedPieces;
     }
