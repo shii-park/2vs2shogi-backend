@@ -5,12 +5,11 @@ import java.time.Instant;
 import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
 public class TurnManager {
-    private Team currentTeam;
+    private volatile Team currentTeam;
     private volatile int turnNumber = 0;
-    private Instant turnTimer;
+    private volatile Instant turnTimer;
 
     private static final int TIMEOUT = 30;
-
 
     public TurnManager(Team firstTeam) {
         this.currentTeam = firstTeam;
@@ -20,7 +19,6 @@ public class TurnManager {
     public void startTurn() {
         this.turnTimer = Instant.now();
     }
-
 
     public boolean isTimeout() {
         return Duration.between(turnTimer, Instant.now()).getSeconds() >= TIMEOUT;
