@@ -61,13 +61,6 @@ public class Game {
      * @param m2 2人目の移動
      */
     public void applyMoves(PlayerMove m1, PlayerMove m2) {
-        // NOTE: 現状は移動決定時に時間切れであればスキップする実装
-        // NOTE: 残り時間を定期的に通知し、時間切れの時点で強制的に移動を確定する予定
-        // NOTE: よってhandleTimeoutの処理はいずれ削除する
-        if (turnManager.isTimeout()) {
-            handleTimeout();
-            return;
-        }
         if (!board.isTop(m1.piece()) && !board.isTop(m2.piece())) {
             return;
         }
