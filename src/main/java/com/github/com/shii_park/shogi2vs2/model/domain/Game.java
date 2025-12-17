@@ -21,10 +21,10 @@ public class Game {
     /**
      * ゲームを初期化する
      * 
-     * @param gameId ゲームID
+     * @param gameId      ゲームID
      * @param playersList プレイヤーのリスト
-     * @param board 盤面
-     * @param firstTeam 先攻チーム
+     * @param board       盤面
+     * @param firstTeam   先攻チーム
      */
     public Game(String gameId, List<Player> playersList, Board board, Team firstTeam) {
         this.gameId = gameId;
@@ -64,6 +64,7 @@ public class Game {
 
         PlayerMove m2 = new PlayerMove(p2, piece, List.of(Direction.RIGHT, Direction.RIGHT), Instant.now());
 
+        // 1人目の移動処理:移動する駒の数だけ実行する
         for (Direction dir1 : m1.direction()) {
             MoveResult res1 = board.moveOneStep(m1.piece(), dir1);
             if (res1 == MoveResult.DROPPED) {
@@ -81,12 +82,8 @@ public class Game {
                 board.stackPiece(board.find(piece), piece);
                 break;
             }
-            capturedPieces.getWinnerTeam().ifPresent(team -> {
-                winnerTeam = team;
-                status = GameStatus.FINISHED;
-            });
         }
-
+        // 2人目の移動処理
         for (Direction dir2 : m2.direction()) {
             MoveResult res2 = board.moveOneStep(m2.piece(), dir2);
             if (res2 == MoveResult.DROPPED) {
@@ -103,11 +100,11 @@ public class Game {
                 board.stackPiece(board.find(piece), piece);
                 break;
             }
-            capturedPieces.getWinnerTeam().ifPresent(team -> {
-                winnerTeam = team;
-                status = GameStatus.FINISHED;
-            });
         }
+        capturedPieces.getWinnerTeam().ifPresent(team -> {
+            winnerTeam = team;
+            status = GameStatus.FINISHED;
+        });
         turnManager.nextTurn();
 
     }
