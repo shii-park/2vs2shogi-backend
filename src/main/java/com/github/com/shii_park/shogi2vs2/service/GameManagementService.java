@@ -22,8 +22,8 @@ public class GameManagementService {
     public String createGameForPlayers(List<String> playerIds){
         String gameId = UUID.randomUUID().toString();
 
-        String team1Id = "TEAM_1";
-        String team2Id = "TEAM_2";
+        String team1Id = "first";
+        String team2Id = "second";
 
         assignPlayerToGame(gameId,playerIds.get(0), team1Id);
         assignPlayerToGame(gameId,playerIds.get(1), team1Id);
