@@ -18,6 +18,14 @@ public class Game {
     private CapturedPieces capturedPieces;
     private TurnManager turnManager;
 
+    /**
+     * ゲームを初期化する
+     * 
+     * @param gameId ゲームID
+     * @param playersList プレイヤーのリスト
+     * @param board 盤面
+     * @param firstTeam 先攻チーム
+     */
     public Game(String gameId, List<Player> playersList, Board board, Team firstTeam) {
         this.gameId = gameId;
         playersList.forEach(p -> players.put(p.getId(), p));
@@ -31,8 +39,14 @@ public class Game {
         turnManager.nextTurn();
     }
 
-    // NOTE: 現在はモックデータを使用している
-    // NOTE: 本来は引数として(PlayerMove m1,PlayerMove m2,Piece piece)を受け取る必要がある
+    /**
+     * プレイヤーの移動を盤面に適用する
+     * 
+     * NOTE: 現在はモックデータを使用している
+     * NOTE: 本来は引数として(PlayerMove m1,PlayerMove m2,Piece piece)を受け取る必要がある
+     * 
+     * @param piece 移動対象の駒
+     */
     public void applyMoves(Piece piece) {
         if (turnManager.isTimeout()) {
             handleTimeout();

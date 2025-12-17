@@ -16,14 +16,28 @@ public class TurnManager {
         this.turnTimer = Instant.now();
     }
 
+    /**
+     * ターンを開始する
+     * turnTimerを現在時刻に初期化する
+     */
     public void startTurn() {
         this.turnTimer = Instant.now();
     }
 
+    /**
+     * 時間切れかどうかを判定する
+     * 
+     * @return true:時間切れ
+     */
     public boolean isTimeout() {
         return Duration.between(turnTimer, Instant.now()).getSeconds() >= TIMEOUT;
     }
 
+    /**
+     * 次のターンに進める
+     * turnNumberをインクリメント
+     * チームを交代する
+     */
     public void nextTurn() {
         turnNumber++;
         this.currentTeam = (this.currentTeam == Team.FIRST) ? Team.SECOND : Team.FIRST;
