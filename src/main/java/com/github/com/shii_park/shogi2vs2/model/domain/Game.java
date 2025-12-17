@@ -39,6 +39,21 @@ public class Game {
         turnManager.nextTurn();
     }
 
+    private void handleResign(Team t) {
+        switch (t) {
+            case FIRST:
+                winnerTeam = Team.SECOND;
+                status = GameStatus.FINISHED;
+                break;
+
+            case SECOND:
+                winnerTeam = Team.FIRST;
+                status = GameStatus.FINISHED;
+                break;
+        }
+
+    }
+
     /**
      * プレイヤーの移動を盤面に適用する
      * 
@@ -48,6 +63,9 @@ public class Game {
      * @param piece 移動対象の駒
      */
     public void applyMoves(Piece piece) {
+        // NOTE: 現状は移動決定時に時間切れであればスキップする実装
+        // NOTE: 残り時間を定期的に通知し、時間切れの時点で強制的に移動を確定する予定
+        // NOTE: よってhandleTimeoutの処理はいずれ削除する
         if (turnManager.isTimeout()) {
             handleTimeout();
             return;
@@ -64,6 +82,9 @@ public class Game {
 
         PlayerMove m2 = new PlayerMove(p2, piece, List.of(Direction.RIGHT, Direction.RIGHT), Instant.now());
 
+        if (p1.isResign() || p2.isResign()) {
+            handleResign(p1.getTeam());
+        }
         // 1人目の移動処理:移動する駒の数だけ実行する
         for (Direction dir1 : m1.direction()) {
             MoveResult res1 = board.moveOneStep(m1.piece(), dir1);
