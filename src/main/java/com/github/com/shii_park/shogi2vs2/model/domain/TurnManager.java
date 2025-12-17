@@ -25,6 +25,15 @@ public class TurnManager {
     }
 
     /**
+     * 残り時間を返す
+     * 
+     * @return
+     */
+    public Duration getTimer() {
+        return Duration.between(Instant.now(), turnTimer);
+    }
+
+    /**
      * 時間切れかどうかを判定する
      * 
      * @return true:時間切れ
