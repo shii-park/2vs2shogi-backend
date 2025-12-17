@@ -57,7 +57,8 @@ public class Game {
     /**
      * プレイヤーの移動を盤面に適用する
      * 
-     * @param piece 移動対象の駒
+     * @param m1 1人目の移動
+     * @param m2 2人目の移動
      */
     public void applyMoves(PlayerMove m1, PlayerMove m2) {
         // NOTE: 現状は移動決定時に時間切れであればスキップする実装
