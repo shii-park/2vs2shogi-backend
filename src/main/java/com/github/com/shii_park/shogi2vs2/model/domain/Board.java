@@ -31,30 +31,66 @@ public class Board {
         this.capturedPieces = new CapturedPieces();
     }
 
-    /** */
+    /**
+     * 捕獲された駒の管理オブジェクトを取得
+     * 
+     * @return
+     */
     public CapturedPieces getCapturedPieces() {
         return capturedPieces;
     }
 
+    /**
+     * Positionにある駒のスタックを返す
+     * 
+     * @param pos
+     * @return not {@code null}
+     */
     private Stack<Piece> getStack(Position pos) {
         return pieces.computeIfAbsent(pos, k -> new Stack<>());
     }
 
+    /**
+     * Positionにあるスタックの一番上の駒{@code Piece}を返す
+     *
+     * @param pos
+     * @return スタックが空のときに{@code null}を返す
+     */
     public Piece getTopPiece(Position pos) {
         Stack<Piece> s = pieces.get(pos);
         return (s == null || s.isEmpty()) ? null : s.peek();
     }
 
+    /**
+     * Positionに積まれている駒のリストを返す
+     * 
+     * @param pos
+     * @return スタックがないときは空のリストを返却する
+     */
     public List<Piece> getAllPiecesAt(Position pos) {
         Stack<Piece> s = pieces.get(pos);
         return (s == null) ? List.of() : new ArrayList<>(s);
     }
 
+    /**
+     * Positionのスタックの一番上ににPieceを積む
+     * 
+     * @param pos
+     * @param piece
+     */
     public void stackPiece(Position pos, Piece piece) {
         getStack(pos).push(piece);
     }
 
-    public List<Piece> captureAll(Position pos, Team capturingteam) {
+    /**
+     * Positionにある駒のスタックを捕獲する
+     * capturingTeamの駒として登録する
+     * 
+     * @param pos
+     * @param capturingTeam
+     * @return 捕獲した駒のリスト
+     */
+    public List<Piece> captureAll(Position pos, Team capturingTeam) {
         Stack<Piece> stack = pieces.get(pos);
         if (stack == null)
             return List.of();
@@ -63,12 +99,18 @@ public class Board {
         pieces.remove(pos);
 
         for (Piece p : captured) {
-            capturedPieces.capturedPiece(capturingteam, p);
+            capturedPieces.capturedPiece(capturingTeam, p);
             index.remove(p);
         }
         return captured;
     }
 
+    /**
+     * 駒がスタックの一番上かを判定する
+     * 
+     * @param piece
+     * @return
+     */
     public boolean isTop(Piece piece) {
         Stack<Piece> pieces = this.pieces.get(find(piece));
         if (pieces != null && !pieces.empty()) {
@@ -77,6 +119,12 @@ public class Board {
         return false;
     }
 
+    /**
+     * Pieceを新しい位置newPosに移動させる
+     * 
+     * @param piece
+     * @param newPos
+     */
     public void movePiece(Piece piece, Position newPos) {
         Position old = index.get(piece);
         Stack<Piece> stack = getStack(old);
@@ -88,6 +136,12 @@ public class Board {
         index.put(piece, newPos);
     }
 
+    /**
+     * 駒が盤面の中にいるか判定する
+     * 
+     * @param pos
+     * @return true:盤面の中, false:盤面の外
+     */
     public boolean isInsideBoard(Position pos) {
         if (pos.x() > BOARD_MAX || pos.x() < BOARD_MIN) {
             return false;
@@ -97,10 +151,21 @@ public class Board {
         return true;
     }
 
+    /**
+     * 駒の場所を特定する
+     * 
+     * @param p
+     * @return Position, 駒がなければ{@code null}
+     */
     public Position find(Piece p) {
         return index.get(p);
     }
 
+    /**
+     * コマの所属チームを反転させる
+     * 
+     * @param p
+     */
     public void changeTeam(Piece p) {
         switch (p.getTeam()) {
             case Team.FIRST:
@@ -112,6 +177,13 @@ public class Board {
         }
     }
 
+    /**
+     * {@code dir}の方向に駒を進める
+     * 
+     * @param piece
+     * @param dir
+     * @return 移動した結果を返す(DROPPED,STACKED,CAPTURED)
+     */
     public MoveResult moveOneStep(Piece piece, Direction dir) {
         Position newPos = find(piece).add(dir);
         if (!isInsideBoard(newPos)) {
