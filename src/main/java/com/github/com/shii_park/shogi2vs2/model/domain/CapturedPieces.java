@@ -20,15 +20,32 @@ public class CapturedPieces {
         winnerTeam = Optional.empty();
     }
 
+    /**
+     * 捕獲済みの駒リストを返す
+     * 
+     * @param team
+     * @return 駒のリスト(not {@code null})
+     */
     public List<Piece> getCapturedPieces(Team team) {
         return capturedPieces.get(team);
     }
 
+    /**
+     * 勝利チームを返す
+     * 
+     * @return
+     */
     public Optional<Team> getWinnerTeam() {
         return winnerTeam;
     }
 
     // TODO: winnerTeamを決める処理を別途追加
+    /**
+     * PieceをTeamのものにする(捕獲する)
+     * 
+     * @param team
+     * @param piece
+     */
     public void capturedPiece(Team team, Piece piece) {
         if (piece.getType() == PieceType.KING) {
             winnerTeam = Optional.of(team);
