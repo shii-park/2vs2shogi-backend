@@ -31,7 +31,7 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew assemble
 
-    - name: Run Tests and check
+    - name: Run Gradle Check
       run: ./gradlew check
 
     - name: Publish Test Report
