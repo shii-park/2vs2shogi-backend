@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import com.github.com.shii_park.shogi2vs2.dto.response.MatchStatusResponse;
+import com.github.com.shii_park.shogi2vs2.dto.response.GameStatusResponse;
 
 @Service
 public class MatchingService {
@@ -56,18 +56,18 @@ public class MatchingService {
     }
 
     //ユーザがマッチング状況を確認する
-    public MatchStatusResponse checkStatus(String userId){
+    public GameStatusResponse checkStatus(String userId){
         String statusKey = USER_MATCH_STATUS_KEY_PREFIX + userId;
         String statusVal = redisTemplate.opsForValue().get(statusKey);
 
         if(statusVal == null){
-            return new MatchStatusResponse("NOT_QEUEUD",null);
+            return new GameStatusResponse("NOT_QEUEUD",null);
         }
         if(statusVal.startsWith("MATCHED:")){
             String gameId = statusVal.split(":")[1];
-            return new MatchStatusResponse("MATCHED",gameId);
+            return new GameStatusResponse("MATCHED",gameId);
         }else{
-            return new MatchStatusResponse("WAITING",null);
+            return new GameStatusResponse("WAITING",null);
         }
     }
 }
