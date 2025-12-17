@@ -74,12 +74,14 @@ public class Board {
 
     /**
      * Positionのスタックの一番上ににPieceを積む
+     * indexを更新する
      * 
      * @param pos
      * @param piece
      */
     public void stackPiece(Position pos, Piece piece) {
         getStack(pos).push(piece);
+        index.put(piece, pos);
     }
 
     /**
