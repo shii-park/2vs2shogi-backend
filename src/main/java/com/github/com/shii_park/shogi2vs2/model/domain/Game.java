@@ -57,12 +57,9 @@ public class Game {
     /**
      * プレイヤーの移動を盤面に適用する
      * 
-     * NOTE: 現在はモックデータを使用している
-     * NOTE: 本来は引数として(PlayerMove m1,PlayerMove m2,Piece piece)を受け取る必要がある
-     * 
      * @param piece 移動対象の駒
      */
-    public void applyMoves(Piece piece) {
+    public void applyMoves(PlayerMove m1, PlayerMove m2) {
         // NOTE: 現状は移動決定時に時間切れであればスキップする実装
         // NOTE: 残り時間を定期的に通知し、時間切れの時点で強制的に移動を確定する予定
         // NOTE: よってhandleTimeoutの処理はいずれ削除する
@@ -70,20 +67,12 @@ public class Game {
             handleTimeout();
             return;
         }
-        if (!board.isTop(piece)) {
+        if (!board.isTop(m1.piece()) && !board.isTop(m2.piece())) {
             return;
         }
-        // モックデータ: p1 飛車 上に3マス / p2 飛車 右に2マス
-        Player p1 = players.get("p1");
-        Player p2 = players.get("p2");
 
-        PlayerMove m1 = new PlayerMove(p1, piece, List.of(Direction.UP, Direction.UP, Direction.UP), false,
-                Instant.now());
-
-        PlayerMove m2 = new PlayerMove(p2, piece, List.of(Direction.RIGHT, Direction.RIGHT), false, Instant.now());
-
-        if (p1.isResign() || p2.isResign()) {
-            handleResign(p1.getTeam());
+        if (m1.player().isResign() || m2.player().isResign()) {
+            handleResign(m1.player().getTeam());
         }
         // 1人目の移動処理:移動する駒の数だけ実行する
         for (Direction dir1 : m1.direction()) {
@@ -100,7 +89,7 @@ public class Game {
             } else if (res1 == MoveResult.CAPTURED) {
                 break;
             } else if (res1 == MoveResult.STACKED) {
-                board.stackPiece(board.find(piece), piece);
+                board.stackPiece(board.find(m1.piece()), m1.piece());
                 break;
             }
         }
@@ -118,7 +107,7 @@ public class Game {
             } else if (res2 == MoveResult.CAPTURED) {
                 break;
             } else if (res2 == MoveResult.STACKED) {
-                board.stackPiece(board.find(piece), piece);
+                board.stackPiece(board.find(m2.piece()), m2.piece());
                 break;
             }
         }
