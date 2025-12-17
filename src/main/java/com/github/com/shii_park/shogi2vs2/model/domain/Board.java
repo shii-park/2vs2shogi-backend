@@ -178,6 +178,40 @@ public class Board {
     }
 
     /**
+     * 駒が成りが可能なエリア内にいるかを返す
+     * FIRSTチームは7行以上、SECONDチームは3行以下が成りエリア
+     * 
+     * @param pos
+     * @param team
+     * @return true:成りが可能なエリア内
+     */
+    public boolean isInPromotionZone(Position pos, Team team) {
+        switch (team) {
+            case FIRST:
+                if (pos.y() >= 7) {
+                    return true;
+                }
+                return false;
+
+            case SECOND:
+                if (pos.y() <= 3) {
+                    return true;
+                }
+                return false;
+        }
+        return false;
+    }
+
+    /**
+     * 受け取ったPieceを成り状態に変える
+     * 
+     * @param piece
+     */
+    public void promotePiece(Piece piece) {
+        piece.setPromoted(true);
+    }
+
+    /**
      * {@code dir}の方向に駒を進める
      * 
      * @param piece

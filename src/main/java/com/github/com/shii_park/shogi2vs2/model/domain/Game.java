@@ -122,10 +122,18 @@ public class Game {
                 break;
             }
         }
+        // 駒が王将、玉将を捕獲していたらゲーム終了
         capturedPieces.getWinnerTeam().ifPresent(team -> {
             winnerTeam = team;
             status = GameStatus.FINISHED;
         });
+        // 駒の成り処理
+        if (m1.promote() && board.isInPromotionZone(board.find(m1.piece()), m1.player().getTeam())) {
+            board.promotePiece(m1.piece());
+        }
+        if (m2.promote() && board.isInPromotionZone(board.find(m2.piece()), m2.player().getTeam())) {
+            board.promotePiece(m2.piece());
+        }
         turnManager.nextTurn();
 
     }
