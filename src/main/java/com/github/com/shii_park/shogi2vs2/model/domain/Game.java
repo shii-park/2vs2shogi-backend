@@ -120,4 +120,20 @@ public class Game {
         turnManager.nextTurn();
 
     }
+
+    public GameStatus getStatus() {
+        return status;
+    }
+
+    public Team getWinnerTeam() {
+        return winnerTeam;
+    }
+
+    public Team getCurrentTeam() {
+        return turnManager.getCurrentTeam();
+    }
+
+    public Board getBoard() {
+        return board;
+    }
 }
