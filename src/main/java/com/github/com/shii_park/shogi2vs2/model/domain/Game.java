@@ -77,10 +77,10 @@ public class Game {
         Player p1 = players.get("p1");
         Player p2 = players.get("p2");
 
-        PlayerMove m1 = new PlayerMove(p1, piece, List.of(Direction.UP, Direction.UP, Direction.UP),
+        PlayerMove m1 = new PlayerMove(p1, piece, List.of(Direction.UP, Direction.UP, Direction.UP), false,
                 Instant.now());
 
-        PlayerMove m2 = new PlayerMove(p2, piece, List.of(Direction.RIGHT, Direction.RIGHT), Instant.now());
+        PlayerMove m2 = new PlayerMove(p2, piece, List.of(Direction.RIGHT, Direction.RIGHT), false, Instant.now());
 
         if (p1.isResign() || p2.isResign()) {
             handleResign(p1.getTeam());
