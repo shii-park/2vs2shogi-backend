@@ -1,7 +1,6 @@
 package com.github.com.shii_park.shogi2vs2.model.domain;
 
 import java.util.Map;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import com.github.com.shii_park.shogi2vs2.model.enums.MoveResult;
@@ -18,14 +17,6 @@ public class Game {
     private CapturedPieces capturedPieces;
     private TurnManager turnManager;
 
-    /**
-     * ゲームを初期化する
-     * 
-     * @param gameId      ゲームID
-     * @param playersList プレイヤーのリスト
-     * @param board       盤面
-     * @param firstTeam   先攻チーム
-     */
     public Game(String gameId, List<Player> playersList, Board board, Team firstTeam) {
         this.gameId = gameId;
         playersList.forEach(p -> players.put(p.getId(), p));
@@ -35,10 +26,11 @@ public class Game {
         this.turnManager = new TurnManager(firstTeam);
     }
 
-    private void handleTimeout() {
-        turnManager.nextTurn();
-    }
-
+    /**
+     * プレイヤーが投了したときのゲーム終了処理を行う
+     * 
+     * @param t 投了したプレイヤーのチーム
+     */
     private void handleResign(Team t) {
         switch (t) {
             case FIRST:
@@ -51,7 +43,6 @@ public class Game {
                 status = GameStatus.FINISHED;
                 break;
         }
-
     }
 
     /**
@@ -121,18 +112,38 @@ public class Game {
 
     }
 
+    /**
+     * ゲームの状態を返す
+     * 
+     * @return status
+     */
     public GameStatus getStatus() {
         return status;
     }
 
+    /**
+     * 勝利チームを返す
+     * 
+     * @return 勝利チーム(勝利チームが確定していないときは{@code null})
+     */
     public Team getWinnerTeam() {
         return winnerTeam;
     }
 
+    /**
+     * 現在のターンのチームを返す
+     * 
+     * @return Team
+     */
     public Team getCurrentTurn() {
         return turnManager.getCurrentTurn();
     }
 
+    /**
+     * 現在の盤面を返す
+     * 
+     * @return Board
+     */
     public Board getBoard() {
         return board;
     }

@@ -27,7 +27,7 @@ public class TurnManager {
     /**
      * 残り時間を返す
      * 
-     * @return
+     * @return Duration 残り時間
      */
     public Duration getTimer() {
         return Duration.between(Instant.now(), turnTimer);
@@ -53,10 +53,20 @@ public class TurnManager {
         startTurn();
     }
 
+    /**
+     * 現在ターンのチームを返す
+     * 
+     * @return ターンのチーム
+     */
     public Team getCurrentTurn() {
         return currentTeam;
     }
 
+    /**
+     * 現在のターン数を返す
+     * 
+     * @return ターン数
+     */
     public int getTurnNumber() {
         return turnNumber;
     }

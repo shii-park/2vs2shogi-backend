@@ -3,6 +3,17 @@ package com.github.com.shii_park.shogi2vs2.model.domain;
 import com.github.com.shii_park.shogi2vs2.model.enums.PieceType;
 import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
+/**
+ * Pieceクラスは駒の状態を管理し、ゲッター、セッターを提供します
+ * 
+ * @param id           駒のid(通し番号(1~9))
+ * @param type         駒の種類
+ * @param team         駒を保有ているチーム
+ * @param isPromoted   駒が成っているか
+ * @param isPromotable 駒が成ることが可能化
+ * 
+ * @author Suiren91
+ */
 public class Piece {
     private final int id;
     private final PieceType type;

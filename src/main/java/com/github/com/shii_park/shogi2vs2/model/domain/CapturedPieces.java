@@ -9,6 +9,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.github.com.shii_park.shogi2vs2.model.enums.PieceType;
 import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
+/**
+ * CapturedPiecesクラスは各チームの手駒を管理します。<br>
+ * 手駒の操作や捕獲に関するメソッドを提供します。
+ * また、王将が捕獲されたときは勝利チームを決定します。
+ * 
+ * @author Suiren91
+ */
 public class CapturedPieces {
     private final Map<Team, List<Piece>> capturedPieces;
     private Optional<Team> winnerTeam;
@@ -21,10 +28,10 @@ public class CapturedPieces {
     }
 
     /**
-     * 捕獲済みの駒リストを返す
+     * チームの手駒リストを返す
      * 
-     * @param team
-     * @return 駒のリスト(not {@code null})
+     * @param team 手駒を確認したいチーム
+     * @return List 手駒リスト(not {@code null})
      */
     public List<Piece> getCapturedPieces(Team team) {
         return capturedPieces.get(team);
@@ -33,7 +40,7 @@ public class CapturedPieces {
     /**
      * 勝利チームを返す
      * 
-     * @return
+     * @return 勝利チーム(確定していないときは{@code Optional.empty()})
      */
     public Optional<Team> getWinnerTeam() {
         return winnerTeam;
@@ -41,10 +48,10 @@ public class CapturedPieces {
 
     // TODO: winnerTeamを決める処理を別途追加
     /**
-     * PieceをTeamのものにする(捕獲する)
+     * 駒を捕獲する
      * 
-     * @param team
-     * @param piece
+     * @param team  捕獲するチーム
+     * @param piece 捕獲する駒
      */
     public void capturedPiece(Team team, Piece piece) {
         if (piece.getType() == PieceType.KING) {
