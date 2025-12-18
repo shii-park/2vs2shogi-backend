@@ -32,7 +32,7 @@ class TurnManagerTest {
     @Test
     void testInitialization() {
         // 現在のチームがFIRSTであることを確認
-        assertEquals(Team.FIRST, turnManager.getCurrentTeam());
+        assertEquals(Team.FIRST, turnManager.getCurrentTurn());
         // ターン番号が0（初期状態）であることを確認
         assertEquals(0, turnManager.getTurnNumber());
     }
@@ -46,7 +46,7 @@ class TurnManagerTest {
         // 次のターンに進める
         turnManager.nextTurn();
         // チームがSECONDに交代したことを確認
-        assertEquals(Team.SECOND, turnManager.getCurrentTeam());
+        assertEquals(Team.SECOND, turnManager.getCurrentTurn());
         // ターン番号が1にインクリメントされたことを確認
         assertEquals(1, turnManager.getTurnNumber());
     }
@@ -59,13 +59,13 @@ class TurnManagerTest {
     void testMultipleTurns() {
         // 1ターン目: FIRSTからSECONDへ
         turnManager.nextTurn();
-        assertEquals(Team.SECOND, turnManager.getCurrentTeam());
+        assertEquals(Team.SECOND, turnManager.getCurrentTurn());
         // 2ターン目: SECONDからFIRSTへ
         turnManager.nextTurn();
-        assertEquals(Team.FIRST, turnManager.getCurrentTeam());
+        assertEquals(Team.FIRST, turnManager.getCurrentTurn());
         // 3ターン目: FIRSTからSECONDへ
         turnManager.nextTurn();
-        assertEquals(Team.SECOND, turnManager.getCurrentTeam());
+        assertEquals(Team.SECOND, turnManager.getCurrentTurn());
         // 合計3ターン経過していることを確認
         assertEquals(3, turnManager.getTurnNumber());
     }
@@ -117,17 +117,17 @@ class TurnManagerTest {
         // FIRSTチームから開始するケース
         TurnManager firstTurn = new TurnManager(Team.FIRST);
         // 初期状態はFIRST
-        assertEquals(Team.FIRST, firstTurn.getCurrentTeam());
+        assertEquals(Team.FIRST, firstTurn.getCurrentTurn());
         // 次のターンでSECONDへ
         firstTurn.nextTurn();
-        assertEquals(Team.SECOND, firstTurn.getCurrentTeam());
+        assertEquals(Team.SECOND, firstTurn.getCurrentTurn());
 
         // SECONDチームから開始するケース
         TurnManager secondTurn = new TurnManager(Team.SECOND);
         // 初期状態はSECOND
-        assertEquals(Team.SECOND, secondTurn.getCurrentTeam());
+        assertEquals(Team.SECOND, secondTurn.getCurrentTurn());
         // 次のターンでFIRSTへ
         secondTurn.nextTurn();
-        assertEquals(Team.FIRST, secondTurn.getCurrentTeam());
+        assertEquals(Team.FIRST, secondTurn.getCurrentTurn());
     }
 }

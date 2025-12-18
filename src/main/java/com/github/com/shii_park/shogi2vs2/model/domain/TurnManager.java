@@ -53,7 +53,7 @@ public class TurnManager {
         startTurn();
     }
 
-    public Team getCurrentTeam() {
+    public Team getCurrentTurn() {
         return currentTeam;
     }
 
