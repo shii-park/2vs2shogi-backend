@@ -129,8 +129,8 @@ public class Game {
         return winnerTeam;
     }
 
-    public Team getCurrentTeam() {
-        return turnManager.getCurrentTeam();
+    public Team getCurrentTurn() {
+        return turnManager.getCurrentTurn();
     }
 
     public Board getBoard() {

@@ -68,7 +68,7 @@ class GameTest {
         // ゲーム状態が進行中であることを確認
         assertEquals(GameStatus.IN_PROGRESS, game.getStatus());
         // 現在のターンがFIRSTチームであることを確認
-        assertEquals(Team.FIRST, game.getCurrentTeam());
+        assertEquals(Team.FIRST, game.getCurrentTurn());
     }
 
     /**
@@ -89,7 +89,7 @@ class GameTest {
         // piece2が(6, 5)に移動したことを確認
         assertEquals(new Position(6, 5), board.find(piece2));
         // ターンがSECONDチームに切り替わったことを確認
-        assertEquals(Team.SECOND, game.getCurrentTeam());
+        assertEquals(Team.SECOND, game.getCurrentTurn());
     }
 
     /**
@@ -176,11 +176,11 @@ class GameTest {
         PlayerMove move2 = new PlayerMove(player2, piece2, List.of(Direction.DOWN), false, Instant.now());
 
         // 初期状態でFIRSTチームのターン
-        assertEquals(Team.FIRST, game.getCurrentTeam());
+        assertEquals(Team.FIRST, game.getCurrentTurn());
         // 移動を適用
         game.applyMoves(move1, move2);
         // SECONDチームのターンに変わったことを確認
-        assertEquals(Team.SECOND, game.getCurrentTeam());
+        assertEquals(Team.SECOND, game.getCurrentTurn());
     }
 
     /**
