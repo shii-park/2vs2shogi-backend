@@ -171,14 +171,7 @@ public class Board {
      * @param p
      */
     public void changeTeam(Piece p) {
-        switch (p.getTeam()) {
-            case Team.FIRST:
-                p.setTeam(Team.SECOND);
-                break;
-            case Team.SECOND:
-                p.setTeam(Team.FIRST);
-                break;
-        }
+        p.getTeam().switchTeam(p.getTeam());
     }
 
     /**
