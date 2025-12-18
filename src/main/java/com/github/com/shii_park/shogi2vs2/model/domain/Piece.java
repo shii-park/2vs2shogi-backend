@@ -3,7 +3,6 @@ package com.github.com.shii_park.shogi2vs2.model.domain;
 import com.github.com.shii_park.shogi2vs2.model.enums.PieceType;
 import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
-
 public class Piece {
     private final int id;
     private final PieceType type;
@@ -40,6 +39,9 @@ public class Piece {
     }
 
     public void setPromoted(boolean p) {
+        if (!this.isPromotable) {
+            return;
+        }
         this.isPromoted = p;
     }
 
