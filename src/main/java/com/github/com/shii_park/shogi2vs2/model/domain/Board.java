@@ -9,6 +9,11 @@ import com.github.com.shii_park.shogi2vs2.model.enums.Direction;
 import com.github.com.shii_park.shogi2vs2.model.enums.MoveResult;
 import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
+/**
+ * Boardクラスは盤面、駒の逆引きインデックス、盤面の操作に関するメソッドを提供する
+ * 
+ * @author Suiren91
+ */
 public class Board {
     private final Map<Position, Stack<Piece>> pieces;
     private final Map<Piece, Position> index;
@@ -34,18 +39,10 @@ public class Board {
     }
 
     /**
-     * 捕獲された駒の管理オブジェクトを取得
+     * 内部ヘルパー:
+     * マスにある駒のスタックを返す
      * 
-     * @return
-     */
-    public CapturedPieces getCapturedPieces() {
-        return capturedPieces;
-    }
-
-    /**
-     * Positionにある駒のスタックを返す
-     * 
-     * @param pos
+     * @param pos スタックを取得したいマス
      * @return not {@code null}
      */
     private Stack<Piece> getStack(Position pos) {
@@ -53,10 +50,19 @@ public class Board {
     }
 
     /**
-     * Positionにあるスタックの一番上の駒{@code Piece}を返す
+     * 捕獲された駒の管理オブジェクトを取得
+     * 
+     * @return capturedPieces
+     */
+    public CapturedPieces getCapturedPieces() {
+        return capturedPieces;
+    }
+
+    /**
+     * マスにあるスタックの一番上の駒{@code Piece}を返す
      *
-     * @param pos
-     * @return スタックが空のときに{@code null}を返す
+     * @param pos 一番上の駒を取得したいマス
+     * @return Piece スタックが空のときに{@code null}を返す
      */
     public Piece getTopPiece(Position pos) {
         Stack<Piece> s = pieces.get(pos);
@@ -64,9 +70,9 @@ public class Board {
     }
 
     /**
-     * Positionに積まれている駒のリストを返す
+     * マスに積まれている駒のリストを返す
      * 
-     * @param pos
+     * @param pos 駒のリストを取得したいマス
      * @return スタックがないときは空のリストを返却する
      */
     public List<Piece> getAllPiecesAt(Position pos) {
@@ -75,11 +81,11 @@ public class Board {
     }
 
     /**
-     * Positionのスタックの一番上ににPieceを積む
+     * マスのスタックの一番上に駒を積む
      * indexを更新する
      * 
-     * @param pos
-     * @param piece
+     * @param pos   駒を積むマス
+     * @param piece 積む駒
      */
     public void stackPiece(Position pos, Piece piece) {
         getStack(pos).push(piece);
@@ -87,11 +93,11 @@ public class Board {
     }
 
     /**
-     * Positionにある駒のスタックを捕獲する
+     * マスにある駒を全て捕獲する<br>
      * capturingTeamの駒として登録する
      * 
-     * @param pos
-     * @param capturingTeam
+     * @param pos           捕獲したいマス
+     * @param capturingTeam 駒を捕獲するチーム
      * @return 捕獲した駒のリスト
      */
     public List<Piece> captureAll(Position pos, Team capturingTeam) {
@@ -112,8 +118,8 @@ public class Board {
     /**
      * 駒がスタックの一番上かを判定する
      * 
-     * @param piece
-     * @return
+     * @param piece 一番上か確認したい駒
+     * @return {@code true}:一番上
      */
     public boolean isTop(Piece piece) {
         Stack<Piece> pieces = this.pieces.get(find(piece));
@@ -124,10 +130,10 @@ public class Board {
     }
 
     /**
-     * Pieceを新しい位置newPosに移動させる
+     * 駒を別のマスnewPosに移動させる
      * 
-     * @param piece
-     * @param newPos
+     * @param piece  移動させたい駒
+     * @param newPos 移動先のマス
      */
     public void movePiece(Piece piece, Position newPos) {
         Position old = index.get(piece);
@@ -143,8 +149,8 @@ public class Board {
     /**
      * 駒が盤面の中にいるか判定する
      * 
-     * @param pos
-     * @return true:盤面の中, false:盤面の外
+     * @param pos 判定したい駒の位置、マス
+     * @return {@code true}:盤面の中, {@code false}:盤面の外
      */
     public boolean isInsideBoard(Position pos) {
         if (pos.x() > BOARD_MAX || pos.x() < BOARD_MIN) {
@@ -158,17 +164,17 @@ public class Board {
     /**
      * 駒の場所を特定する
      * 
-     * @param p
-     * @return Position, 駒がなければ{@code null}
+     * @param p 場所を特定したい駒
+     * @return 駒のあるマス, 駒がなければ{@code null}
      */
     public Position find(Piece p) {
         return index.get(p);
     }
 
     /**
-     * コマの所属チームを反転させる
+     * 駒の所属チームを反転させる
      * 
-     * @param p
+     * @param p チームを反転させたい駒
      */
     public void changeTeam(Piece p) {
         p.getTeam().switchTeam(p.getTeam());
@@ -178,9 +184,9 @@ public class Board {
      * 駒が成りが可能なエリア内にいるかを返す
      * FIRSTチームは7行以上、SECONDチームは3行以下が成りエリア
      * 
-     * @param pos
-     * @param team
-     * @return true:成りが可能なエリア内
+     * @param pos  駒の位置、マス
+     * @param team 駒を保有するチーム
+     * @return {@code true}:成りが可能なエリア内
      */
     public boolean isInPromotionZone(Position pos, Team team) {
         switch (team) {
@@ -200,20 +206,20 @@ public class Board {
     }
 
     /**
-     * 受け取ったPieceを成り状態に変える
+     * 受け取った駒を成り状態に変える
      * 
-     * @param piece
+     * @param piece 成りたい駒
      */
     public void promotePiece(Piece piece) {
-        piece.setPromoted(true);
+        piece.setPromoted(true); // TODO: isPromotableがfalseのときの処理を追加
     }
 
     /**
      * {@code dir}の方向に駒を進める
      * 
-     * @param piece
-     * @param dir
-     * @return 移動した結果を返す(DROPPED,STACKED,CAPTURED)
+     * @param piece 移動させる駒
+     * @param dir   移動させたい方向
+     * @return 移動した結果を返す({@code DROPPED},{@code STACKED},{@code CAPTURED},{@code MOVED})
      */
     public MoveResult moveOneStep(Piece piece, Direction dir) {
         Position newPos = find(piece).add(dir);
