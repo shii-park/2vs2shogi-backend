@@ -17,6 +17,8 @@ public class Board {
     // 盤面の左下が(0,0)、右上が(8,8)
     private static final int BOARD_MIN = 1;
     private static final int BOARD_MAX = 9;
+    private static final int FIRST_PROMOTABLE_ZONE = 7;
+    private static final int SECOND_PROMOTABLE_ZONE = 3;
 
     public Board(Map<Piece, Position> initialPieces) {
         this.pieces = new ConcurrentHashMap<>();
@@ -190,13 +192,13 @@ public class Board {
     public boolean isInPromotionZone(Position pos, Team team) {
         switch (team) {
             case FIRST:
-                if (pos.y() >= 7) {
+                if (pos.y() >= FIRST_PROMOTABLE_ZONE) {
                     return true;
                 }
                 return false;
 
             case SECOND:
-                if (pos.y() <= 3) {
+                if (pos.y() <= SECOND_PROMOTABLE_ZONE) {
                     return true;
                 }
                 return false;
