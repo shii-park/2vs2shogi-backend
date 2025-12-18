@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.com.shii_park.shogi2vs2.dto.request.MoveRequest;
 import com.github.com.shii_park.shogi2vs2.service.GameContextService;
 import com.github.com.shii_park.shogi2vs2.service.InputSynthesisService;
-
+import com.github.com.shii_park.shogi2vs2.service.GameTimeService;
 @Component
 public class GameWebSocketHandler extends TextWebSocketHandler{
     @Autowired
@@ -26,7 +26,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler{
     @Autowired
     private GameContextService gameContextService;
     @Autowired
-    private com.github.com.shii_park.shogi2vs2.service.GameTimeService gameTimeService;
+    private GameTimeService gameTimeService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -51,8 +51,15 @@ public class GameWebSocketHandler extends TextWebSocketHandler{
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status)throws Exception {
         String gameId = (String)session.getAttributes().get("gameId");
-        if(gameId != null && gameSessions.containsKey(gameId)){
-            gameSessions.get(gameId).remove(session);
+
+        if(gameId != null){
+            List<WebSocketSession> sessions = gameSessions.get(gameid);
+            if(sessions != null){
+                sessions.remove(session);
+                if(sessions.isEmpty()){
+                    gameSessions.get(gameId).remove(session);
+                }
+            }
         }
     }
 
@@ -62,19 +69,64 @@ public class GameWebSocketHandler extends TextWebSocketHandler{
         MoveRequest request = objectMapper.readValue(payload, MoveRequest.class);
         String gameId = (String)session.getAttributes().get("gameId");
         String userId = (String)session.getAttributes().get("userId");
+
+        if(gameId == null) return;
         String teamId = gameContextService.getUserTeam(gameId, userId);
-        if (teamId == null ){
-            return;
-        } 
+        
+        position normalizedFrom = boardCoordinateService.normalize(request.getFrom(), teamId);
+        position normalizedTo = boardCoordinateService.normalize(request.getTo(), teamId);
+        MoveRequest normalizedRequest = new MoveRequest(
+            request.getUserId(),
+            normalizedFrom,
+            normalizedTo,
+            request.isPromote()
+        );
+
         List<MoveRequest> moves = synthesisService.handleInput(gameId, teamId, request);
-        if (moves != null){
+        if (moves == null){
             session.sendMessage(new TextMessage("{\"status\":\"WAITING_PARTNER\"}"));
         }else{
-            String resultJson = objectMapper.writeValueAsString(moves);
-            String response = String.format("{\"type\":\"MOVE_EXECUTED\",\"data\":%s}",resultJson);
-            broadcastToGame(gameId,response);
-            
+            MoveRequest adoptedMove = normalizedRequest;
+            broadcastMoveResult(gameId,adoptedMove);
             gameTimeService.startNewTurn(gameId);
+        }
+    }
+
+    public void broadcastMoveResult(String gameId, MoveRequest executedMove){
+        List<WebSocketSession> sessions = gameSessions.get(gameId);
+        if(sessions = null) return;
+
+        for(WebSocketSession session : sessions){
+            if(!session.isOpen()) continue;
+        
+
+            try{
+                String userId = (String) session.getAttributes().get("userId");
+                String teamId = gameContextService.getUserTeam(gameId, userId);
+
+                MoveRequest viewMove;
+
+                if("second".equals(teamId)){
+                    Position viewedFrom  = broadCoordinateService.normalize(executedMove.getFrom(),"second");
+                    Position viewedTo = broadCoordinateService.normalize(executedMove.getTo(),"second");
+
+                    viewMove = new MoveRequest(
+                        executedMove.getUserId(),
+                        viewedFrom,
+                        viewedTo,
+                        executedMove.isPromote()
+                    );
+                } else{
+                    viewMove = executedMove;
+                }
+
+                String resultJson = objectMapper.writeValueAsString(viewMove);
+                String responseMessage = String.format("{\"type\":\"MOVE_EXECUTED\",\"data\":%s}", resultJson);
+
+                session.sendMessage(new TextMessage(responseMessage));
+            } catch (Exception e){
+                e.printStackTrace();
+            }
         }
     }
 
@@ -105,9 +157,9 @@ public class GameWebSocketHandler extends TextWebSocketHandler{
     }
 
     public void handleTimeout(String gameId){
-        gameTimeService.startNewTurn(gameId);
+        GameTimeService.startNewTurn(gameId);
 
-        String TimeUpMessage = "{\"type\":\"TIME_UP\",\"message\":\"Time is up for your turn.\"}";
-        broadcastToGame(gameId,TimeUpMessage);
+        String timeUpMessage = "{\"type\":\"TIME_UP\",\"message\":\"Time is up for your turn.\"}";
+        broadcastToGame(gameId,timeUpMessage);
     }
 }
