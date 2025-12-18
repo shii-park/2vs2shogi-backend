@@ -49,7 +49,7 @@ public class TurnManager {
      */
     public void nextTurn() {
         turnNumber++;
-        this.currentTeam = (this.currentTeam == Team.FIRST) ? Team.SECOND : Team.FIRST;
+        this.currentTeam = currentTeam.switchTeam(this.currentTeam);
         startTurn();
     }
 
