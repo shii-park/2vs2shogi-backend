@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
+
 import com.github.com.shii_park.shogi2vs2.model.enums.Direction;
 import com.github.com.shii_park.shogi2vs2.model.enums.MoveResult;
 import com.github.com.shii_park.shogi2vs2.model.enums.Team;
@@ -177,7 +178,7 @@ public class Board {
      * @param p チームを反転させたい駒
      */
     public void changeTeam(Piece p) {
-        p.getTeam().switchTeam(p.getTeam());
+        p.setTeam(p.getTeam().switchTeam());
     }
 
     /**
