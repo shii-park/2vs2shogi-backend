@@ -223,4 +223,110 @@ class GameTest {
         // 勝者が決定したことを確認
         assertNotNull(game.getWinnerTeam());
     }
+
+    /**
+     * 手駒から盤面に駒を打つテスト（正常系）
+     * 処理: 手駒から駒を取り出して空いているマスに配置できることを確認
+     */
+    @Test
+    void testApplyDropSuccess() {
+        // FIRSTチームがSECONDチームの歩兵を捕獲
+        Piece capturedPawn = new Piece(10, PieceType.PAWN, Team.SECOND, false);
+        board.getCapturedPieces().capturedPiece(Team.FIRST, capturedPawn);
+        // 手駒に1つの駒が含まれることを確認
+        assertEquals(1, board.getCapturedPieces().getCapturedPieces(Team.FIRST).size());
+
+        // 空いている位置を指定
+        Position dropPosition = new Position(3, 3);
+        // 空いていることを確認
+        assertNull(board.getTopPiece(dropPosition));
+
+        // player1が手駒から(3, 3)に駒を打つ
+        PlayerDropPiece drop = new PlayerDropPiece(player1, capturedPawn, dropPosition);
+        game.applyDrop(drop);
+
+        // (3, 3)に駒が配置されたことを確認
+        assertNotNull(board.getTopPiece(dropPosition));
+        // 配置された駒がcapturedPawnであることを確認
+        assertEquals(capturedPawn, board.getTopPiece(dropPosition));
+        // 手駒から駒が削除されたことを確認
+        assertEquals(0, board.getCapturedPieces().getCapturedPieces(Team.FIRST).size());
+    }
+
+    /**
+     * 駒がある位置に手駒を打とうとするテスト
+     * 処理: すでに駒がある位置には打てないことを確認
+     */
+    @Test
+    void testApplyDropToOccupiedPosition() {
+        // FIRSTチームがSECONDチームの歩兵を捕獲
+        Piece capturedPawn = new Piece(10, PieceType.PAWN, Team.SECOND, false);
+        board.getCapturedPieces().capturedPiece(Team.FIRST, capturedPawn);
+
+        // すでに駒がある位置を指定
+        Position occupiedPosition = new Position(5, 5);
+        // piece1が(5, 5)にいることを確認
+        assertEquals(piece1, board.getTopPiece(occupiedPosition));
+
+        // player1が(5, 5)に駒を打とうとする
+        PlayerDropPiece drop = new PlayerDropPiece(player1, capturedPawn, occupiedPosition);
+        game.applyDrop(drop);
+
+        // piece1がまだ(5, 5)にいることを確認
+        assertEquals(piece1, board.getTopPiece(occupiedPosition));
+        // 手駒が削除されていないことを確認
+        assertEquals(1, board.getCapturedPieces().getCapturedPieces(Team.FIRST).size());
+    }
+
+    /**
+     * 手駒に存在しない駒を打とうとするテスト
+     * 処理: 手駒に存在しない駒は打てないことを確認
+     */
+    @Test
+    void testApplyDropNonExistentPiece() {
+        // 手駒が空であることを確認
+        assertEquals(0, board.getCapturedPieces().getCapturedPieces(Team.FIRST).size());
+
+        // 存在しない駒を打とうとする
+        Piece nonExistentPiece = new Piece(99, PieceType.PAWN, Team.FIRST, false);
+        Position dropPosition = new Position(3, 3);
+        PlayerDropPiece drop = new PlayerDropPiece(player1, nonExistentPiece, dropPosition);
+        game.applyDrop(drop);
+
+        // (3, 3)に駒が配置されていないことを確認
+        assertNull(board.getTopPiece(dropPosition));
+    }
+
+    /**
+     * 複数の手駒を順番に打つテスト
+     * 処理: 複数の手駒を順番に盤面に配置できることを確認
+     */
+    @Test
+    void testApplyDropMultiplePieces() {
+        // FIRSTチームが2つの駒を捕獲
+        Piece capturedPawn1 = new Piece(10, PieceType.PAWN, Team.SECOND, false);
+        Piece capturedPawn2 = new Piece(11, PieceType.PAWN, Team.SECOND, false);
+        board.getCapturedPieces().capturedPiece(Team.FIRST, capturedPawn1);
+        board.getCapturedPieces().capturedPiece(Team.FIRST, capturedPawn2);
+        // 手駒に2つの駒が含まれることを確認
+        assertEquals(2, board.getCapturedPieces().getCapturedPieces(Team.FIRST).size());
+
+        // 1つ目の駒を打つ
+        Position dropPosition1 = new Position(3, 3);
+        PlayerDropPiece drop1 = new PlayerDropPiece(player1, capturedPawn1, dropPosition1);
+        game.applyDrop(drop1);
+        // (3, 3)に駒が配置されたことを確認
+        assertNotNull(board.getTopPiece(dropPosition1));
+        // 手駒が1つ減ったことを確認
+        assertEquals(1, board.getCapturedPieces().getCapturedPieces(Team.FIRST).size());
+
+        // 2つ目の駒を打つ
+        Position dropPosition2 = new Position(4, 4);
+        PlayerDropPiece drop2 = new PlayerDropPiece(player1, capturedPawn2, dropPosition2);
+        game.applyDrop(drop2);
+        // (4, 4)に駒が配置されたことを確認
+        assertNotNull(board.getTopPiece(dropPosition2));
+        // 手駒が空になったことを確認
+        assertEquals(0, board.getCapturedPieces().getCapturedPieces(Team.FIRST).size());
+    }
 }
