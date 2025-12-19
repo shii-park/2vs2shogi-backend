@@ -15,7 +15,7 @@ import com.github.com.shii_park.shogi2vs2.model.enums.Team;
  * @author Suiren91
  */
 public class Piece {
-    private final int id;
+    private final int id; // TODO: numberに変更
     private final PieceType type;
     private Team team;
     private boolean isPromoted; // 成りの有無
