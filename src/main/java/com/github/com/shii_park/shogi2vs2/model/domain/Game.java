@@ -1,6 +1,7 @@
 package com.github.com.shii_park.shogi2vs2.model.domain;
 
 import java.util.Map;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import com.github.com.shii_park.shogi2vs2.model.enums.MoveResult;
@@ -15,6 +16,8 @@ public class Game {
     private volatile GameStatus status = GameStatus.WAITING;
     private Team winnerTeam;
     private CapturedPieces capturedPieces;
+    private final List<PendingDrop> pendingDrops;
+    private boolean promoteFlag;
     private TurnManager turnManager;
 
     public Game(String gameId, List<Player> playersList, Board board, Team firstTeam) {
@@ -23,6 +26,8 @@ public class Game {
         this.board = board;
         this.status = GameStatus.IN_PROGRESS;
         this.capturedPieces = board.getCapturedPieces();
+        this.pendingDrops = new ArrayList<>();
+        this.promoteFlag = false;
         this.turnManager = new TurnManager(firstTeam);
     }
 
@@ -72,10 +77,13 @@ public class Game {
                 break;
             }
         }
+        if (move.promote()) {
+            promoteFlag = true;
+        }
     }
 
     /**
-     * プレイヤーの手駒を盤面に配置する
+     * プレイヤーの手駒の配置予約をする
      * 
      * @param drop プレイヤーの手駒から盤面に打つ操作
      */
@@ -83,11 +91,8 @@ public class Game {
         if (board.getTopPiece(drop.position()) != null) {
             return;
         }
-        Piece piece = capturedPieces.getCapturedPiece(drop.player().getTeam(), drop.piece());
-        if (piece == null) {
-            return;
-        }
-        board.stackPiece(drop.position(), piece);
+        PendingDrop pendingDrop = new PendingDrop(drop.player(), drop.piece(), drop.position());
+        pendingDrops.add(pendingDrop);
         return;
     }
 
