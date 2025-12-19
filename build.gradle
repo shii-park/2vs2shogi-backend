@@ -26,6 +26,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	runtimeOnly 'org.postgresql:postgresql'
+	//テスト用に追加したコード
+	//Redis用のパッケージを追加したらここは削除してください
+	testImplementation 'com.h2database:h2'
+	//テスト用に追加したコードここまで 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
