@@ -225,7 +225,7 @@ public class Board {
     public MoveResult moveOneStep(Piece piece, Direction dir) {
         Position newPos = find(piece).add(dir);
         if (!isInsideBoard(newPos)) {
-            return MoveResult.FALLED;
+            return MoveResult.FELL;
         }
         Piece top = getTopPiece(newPos);
         if (top != null && top.getTeam() == piece.getTeam()) {

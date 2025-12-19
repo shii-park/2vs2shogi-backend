@@ -191,7 +191,7 @@ class BoardTest {
         // さらに右に移動しようとすると盤外に出る
         MoveResult result = board.moveOneStep(piece1, Direction.RIGHT);
         // 盤外に落ちたことを確認
-        assertEquals(MoveResult.FALLED, result);
+        assertEquals(MoveResult.FELL, result);
     }
 
     /**
