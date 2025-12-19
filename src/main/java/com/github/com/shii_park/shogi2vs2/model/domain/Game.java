@@ -16,8 +16,8 @@ public class Game {
     private volatile GameStatus status = GameStatus.WAITING;
     private Team winnerTeam;
     private CapturedPieces capturedPieces;
-    private final List<PendingDrop> pendingDrops;
-    private boolean promoteFlag;
+    private final List<PlayerDropPiece> pendingDrops;
+    private final List<Piece> pendingPromote;
     private TurnManager turnManager;
 
     public Game(String gameId, List<Player> playersList, Board board, Team firstTeam) {
@@ -27,7 +27,7 @@ public class Game {
         this.status = GameStatus.IN_PROGRESS;
         this.capturedPieces = board.getCapturedPieces();
         this.pendingDrops = new ArrayList<>();
-        this.promoteFlag = false;
+        this.pendingPromote = new ArrayList<>();
         this.turnManager = new TurnManager(firstTeam);
     }
 
@@ -78,7 +78,7 @@ public class Game {
             }
         }
         if (move.promote()) {
-            promoteFlag = true;
+            pendingPromote.add(move.piece());
         }
     }
 
@@ -91,9 +91,38 @@ public class Game {
         if (board.getTopPiece(drop.position()) != null) {
             return;
         }
-        PendingDrop pendingDrop = new PendingDrop(drop.player(), drop.piece(), drop.position());
-        pendingDrops.add(pendingDrop);
+        pendingDrops.add(drop);
         return;
+    }
+
+    /**
+     * ターン終了時の処理を行う<br>
+     * 王将が捕獲されていた場合、ゲーム終了処理を行う<br>
+     * 待機中の成りを処理する<br>
+     * 待機中の手駒からの配置を処理する<br>
+     * 
+     */
+    public void handleTurnEnd() {
+        capturedPieces.getWinnerTeam().ifPresent(team -> {
+            winnerTeam = team;
+            status = GameStatus.FINISHED;
+        });
+        pendingPromote.forEach(piece -> {
+            if (board.isInPromotionZone(board.find(piece), piece.getTeam())) {
+                piece.setPromoted(true);
+            }
+        });
+        pendingDrops.forEach(drop -> {
+            Piece piece = capturedPieces.getCapturedPiece(drop.player().getTeam(), drop.piece());
+            if (piece == null) {
+                return;
+            }
+            board.stackPiece(drop.position(), piece);
+        });
+
+        pendingDrops.clear();
+        pendingPromote.clear();
+        // 次のターンに進む
     }
 
     /**
