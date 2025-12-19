@@ -62,7 +62,7 @@ public class Game {
         // 1人目の移動処理:移動する駒の数だけ実行する
         for (Direction dir1 : m1.direction()) {
             MoveResult res1 = board.moveOneStep(m1.piece(), dir1);
-            if (res1 == MoveResult.DROPPED) {
+            if (res1 == MoveResult.FALLED) {
                 if (m1.player().getTeam() == Team.FIRST) {
                     capturedPieces.capturedPiece(Team.SECOND, m1.piece());
                     break;
@@ -81,7 +81,7 @@ public class Game {
         // 2人目の移動処理
         for (Direction dir2 : m2.direction()) {
             MoveResult res2 = board.moveOneStep(m2.piece(), dir2);
-            if (res2 == MoveResult.DROPPED) {
+            if (res2 == MoveResult.FALLED) {
                 if (m2.player().getTeam() == Team.FIRST) {
                     capturedPieces.capturedPiece(Team.SECOND, m2.piece());
                     break;

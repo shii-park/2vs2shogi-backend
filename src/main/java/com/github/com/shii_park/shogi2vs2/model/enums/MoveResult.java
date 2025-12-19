@@ -7,5 +7,6 @@ package com.github.com.shii_park.shogi2vs2.model.enums;
  * MOVED: 駒が移動した
  */
 public enum MoveResult {
-    DROPPED, STACKED, CAPTURED, MOVED;
+    FALLED, STACKED, CAPTURED, MOVED;
 }
+//TODO: DROPPEDからFALLEDに変更
