@@ -58,14 +58,13 @@ public class Game {
         for (Direction dir : move.direction()) {
             MoveResult res = board.moveOneStep(move.piece(), dir);
             if (res == MoveResult.DROPPED) {
-                if (move.player().getTeam() == Team.FIRST) {
-                    capturedPieces.capturedPiece(Team.SECOND, move.piece());
-                    break;
-                } else {
-                    capturedPieces.capturedPiece(Team.FIRST, move.piece());
-                    break;
+                switch (move.player().getTeam()) {
+                    case FIRST:
+                        capturedPieces.capturedPiece(Team.SECOND, move.piece());
+                        break;
+                    case SECOND:
+                        capturedPieces.capturedPiece(Team.FIRST, move.piece());
                 }
-
             } else if (res == MoveResult.CAPTURED) {
                 break;
             } else if (res == MoveResult.STACKED) {
