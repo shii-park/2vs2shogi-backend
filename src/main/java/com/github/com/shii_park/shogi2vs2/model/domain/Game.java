@@ -55,7 +55,7 @@ public class Game {
         if (!board.isTop(m1.piece()) && !board.isTop(m2.piece())) {
             return;
         }
-
+        // TODO: resign処理の切り分け
         if (m1.player().isResign() || m2.player().isResign()) {
             handleResign(m1.player().getTeam());
         }
@@ -110,6 +110,23 @@ public class Game {
         }
         turnManager.nextTurn();
 
+    }
+
+    /**
+     * プレイヤーの手駒を盤面に配置する
+     * 
+     * @param drop プレイヤーの手駒から盤面に打つ操作
+     */
+    public void applyDrop(PlayerDropPiece drop) {
+        if (board.getTopPiece(drop.position()) != null) {
+            return;
+        }
+        Piece piece = capturedPieces.getCapturedPiece(drop.player().getTeam(), drop.piece());
+        if (piece == null) {
+            return;
+        }
+        board.stackPiece(drop.position(), piece);
+        return;
     }
 
     /**
