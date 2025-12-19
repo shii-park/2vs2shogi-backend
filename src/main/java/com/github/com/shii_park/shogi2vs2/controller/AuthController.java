@@ -18,7 +18,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")//URL
-@CrossOrigin(origins = "*")//Next.jsからのアクセスを許可
+@CrossOrigin(origins = "${app.cors.allowed-origins}")//許可するオリジンは設定ファイルから取得する
 public class AuthController {
     
     @Autowired
