@@ -46,70 +46,33 @@ public class Game {
     }
 
     /**
-     * プレイヤーの移動を盤面に適用する
+     * プレイヤーの駒の移動を盤面に適用する
      * 
-     * @param m1 1人目の移動
-     * @param m2 2人目の移動
+     * @param move プレイヤーの駒の移動
      */
-    public void applyMoves(PlayerMove m1, PlayerMove m2) {
-        if (!board.isTop(m1.piece()) && !board.isTop(m2.piece())) {
+    public void applyMove(PlayerMove move) {
+        if (!board.isTop(move.piece())) {
             return;
         }
-        // TODO: resign処理の切り分け
-        if (m1.player().isResign() || m2.player().isResign()) {
-            handleResign(m1.player().getTeam());
-        }
-        // 1人目の移動処理:移動する駒の数だけ実行する
-        for (Direction dir1 : m1.direction()) {
-            MoveResult res1 = board.moveOneStep(m1.piece(), dir1);
-            if (res1 == MoveResult.DROPPED) {
-                if (m1.player().getTeam() == Team.FIRST) {
-                    capturedPieces.capturedPiece(Team.SECOND, m1.piece());
+        // 飛車、角行など、複数マス移動する駒は繰り返し実行する
+        for (Direction dir : move.direction()) {
+            MoveResult res = board.moveOneStep(move.piece(), dir);
+            if (res == MoveResult.DROPPED) {
+                if (move.player().getTeam() == Team.FIRST) {
+                    capturedPieces.capturedPiece(Team.SECOND, move.piece());
                     break;
                 } else {
-                    capturedPieces.capturedPiece(Team.FIRST, m1.piece());
+                    capturedPieces.capturedPiece(Team.FIRST, move.piece());
                     break;
                 }
 
-            } else if (res1 == MoveResult.CAPTURED) {
+            } else if (res == MoveResult.CAPTURED) {
                 break;
-            } else if (res1 == MoveResult.STACKED) {
-                board.stackPiece(board.find(m1.piece()), m1.piece());
-                break;
-            }
-        }
-        // 2人目の移動処理
-        for (Direction dir2 : m2.direction()) {
-            MoveResult res2 = board.moveOneStep(m2.piece(), dir2);
-            if (res2 == MoveResult.DROPPED) {
-                if (m2.player().getTeam() == Team.FIRST) {
-                    capturedPieces.capturedPiece(Team.SECOND, m2.piece());
-                    break;
-                } else {
-                    capturedPieces.capturedPiece(Team.FIRST, m2.piece());
-                    break;
-                }
-            } else if (res2 == MoveResult.CAPTURED) {
-                break;
-            } else if (res2 == MoveResult.STACKED) {
-                board.stackPiece(board.find(m2.piece()), m2.piece());
+            } else if (res == MoveResult.STACKED) {
+                board.stackPiece(board.find(move.piece()), move.piece());
                 break;
             }
         }
-        // 駒が王将、玉将を捕獲していたらゲーム終了
-        capturedPieces.getWinnerTeam().ifPresent(team -> {
-            winnerTeam = team;
-            status = GameStatus.FINISHED;
-        });
-        // 駒の成り処理
-        if (m1.promote() && board.isInPromotionZone(board.find(m1.piece()), m1.player().getTeam())) {
-            board.promotePiece(m1.piece());
-        }
-        if (m2.promote() && board.isInPromotionZone(board.find(m2.piece()), m2.player().getTeam())) {
-            board.promotePiece(m2.piece());
-        }
-        turnManager.nextTurn();
-
     }
 
     /**
