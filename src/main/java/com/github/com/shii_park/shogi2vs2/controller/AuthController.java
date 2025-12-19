@@ -14,16 +14,18 @@ import org.springframework.web.bind.annotation.RestController;
 import com.github.com.shii_park.shogi2vs2.dto.auth.LoginRequest;
 import com.github.com.shii_park.shogi2vs2.dto.auth.LoginResponse;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/auth")//URL
-@CrossOrigin(origins = "*")//Next.jaからのアクセスを許可
+@CrossOrigin(origins = "*")//Next.jsからのアクセスを許可
 public class AuthController {
     
     @Autowired
     private StringRedisTemplate redisTemplate;
 
-    @PostMapping("/login")
-    public LoginResponse login(@RequestBody LoginRequest request){
+    @PostMapping("/register")
+    public LoginResponse register(@RequestBody @Valid LoginRequest request){
         String userId = UUID.randomUUID().toString(); //ランダムなユーザーID生成
 
         redisTemplate.opsForValue().set(
