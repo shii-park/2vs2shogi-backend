@@ -1,61 +1,150 @@
 package com.github.com.shii_park.shogi2vs2.model.domain;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.HashMap;
 import java.util.List;
-
+import com.github.com.shii_park.shogi2vs2.model.enums.MoveResult;
+import com.github.com.shii_park.shogi2vs2.model.enums.Direction;
 import com.github.com.shii_park.shogi2vs2.model.enums.GameStatus;
+import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
 public class Game {
     private final String gameId;
-    private final Map<Position,Piece>board=new ConcurrentHashMap<>(); //分離
-    private final Map<String,Player>players=new HashMap<>();
-    private volatile int turnNumber=0;
-    private volatile GameStatus status=GameStatus.WAITING;
-    private final List<MoveRecord>history=Collections.synchronizedList(new ArrayList<>());
-    
-    private static final int BOARD_MIN=1;
-    private static final int BOARD_MAX_X=9;
-    private static final int BOARD_MAX_Y=9;
+    private final Map<String, Player> players = new HashMap<>();
+    private final Board board;
+    private volatile GameStatus status = GameStatus.WAITING;
+    private Team winnerTeam;
+    private CapturedPieces capturedPieces;
+    private TurnManager turnManager;
 
-    public Game(String gameId,List<Player>playersList,List<Piece>initialPieces){
-        this.gameId=gameId;
-        playersList.forEach(p->players.put(p.getId(), p));
-        initialPieces.forEach(pc->board.put(pc.getPosition(),pc));
-        this.status=GameStatus.IN_PROGRESS;
+    public Game(String gameId, List<Player> playersList, Board board, Team firstTeam) {
+        this.gameId = gameId;
+        playersList.forEach(p -> players.put(p.getId(), p));
+        this.board = board;
+        this.status = GameStatus.IN_PROGRESS;
+        this.capturedPieces = board.getCapturedPieces();
+        this.turnManager = new TurnManager(firstTeam);
     }
 
-    public Optional<Piece>getPieceAt(Position pos){
-        return Optional.ofNullable(board.get(pos));
-    }
-    
-    //分割
-    public void applyMoves(List<ComposedMove>applied){
-        synchronized(this){
-            for(ComposedMove cm:applied){
-                Piece p=cm.getPiece();
-                Position prev=p.getPosition();
-                Piece captured=board.remove(cm.getPosition());
-                if(captured!=null){
-                    //持ち駒ルールなど
-                }
-                //盤面をアップデート
-                board.remove(prev);
-                p.setPosition(cm.getPosition());
-                if(cm.getPromote())p.setPromoted(true);
-                board.put(cm.getPosition(),p);
-               history.add(new MoveRecord(p.getTeam(), prev, cm.getPosition(), cm.getPromote()));
-            }
-            turnNumber++;
+    /**
+     * プレイヤーが投了したときのゲーム終了処理を行う
+     * 
+     * @param t 投了したプレイヤーのチーム
+     */
+    private void handleResign(Team t) {
+        switch (t) {
+            case FIRST:
+                winnerTeam = Team.SECOND;
+                status = GameStatus.FINISHED;
+                break;
+
+            case SECOND:
+                winnerTeam = Team.FIRST;
+                status = GameStatus.FINISHED;
+                break;
         }
     }
-    //盤面からはみ出ないか判定(分離)
-    public boolean isInsideBoard(Position p){
-        return p.getX() >=BOARD_MIN && p.getX()<=BOARD_MAX_X && p.getY() >= BOARD_MIN && p.getY() <= BOARD_MAX_Y;
+
+    /**
+     * プレイヤーの移動を盤面に適用する
+     * 
+     * @param m1 1人目の移動
+     * @param m2 2人目の移動
+     */
+    public void applyMoves(PlayerMove m1, PlayerMove m2) {
+        if (!board.isTop(m1.piece()) && !board.isTop(m2.piece())) {
+            return;
+        }
+
+        if (m1.player().isResign() || m2.player().isResign()) {
+            handleResign(m1.player().getTeam());
+        }
+        // 1人目の移動処理:移動する駒の数だけ実行する
+        for (Direction dir1 : m1.direction()) {
+            MoveResult res1 = board.moveOneStep(m1.piece(), dir1);
+            if (res1 == MoveResult.DROPPED) {
+                if (m1.player().getTeam() == Team.FIRST) {
+                    capturedPieces.capturedPiece(Team.SECOND, m1.piece());
+                    break;
+                } else {
+                    capturedPieces.capturedPiece(Team.FIRST, m1.piece());
+                    break;
+                }
+
+            } else if (res1 == MoveResult.CAPTURED) {
+                break;
+            } else if (res1 == MoveResult.STACKED) {
+                board.stackPiece(board.find(m1.piece()), m1.piece());
+                break;
+            }
+        }
+        // 2人目の移動処理
+        for (Direction dir2 : m2.direction()) {
+            MoveResult res2 = board.moveOneStep(m2.piece(), dir2);
+            if (res2 == MoveResult.DROPPED) {
+                if (m2.player().getTeam() == Team.FIRST) {
+                    capturedPieces.capturedPiece(Team.SECOND, m2.piece());
+                    break;
+                } else {
+                    capturedPieces.capturedPiece(Team.FIRST, m2.piece());
+                    break;
+                }
+            } else if (res2 == MoveResult.CAPTURED) {
+                break;
+            } else if (res2 == MoveResult.STACKED) {
+                board.stackPiece(board.find(m2.piece()), m2.piece());
+                break;
+            }
+        }
+        // 駒が王将、玉将を捕獲していたらゲーム終了
+        capturedPieces.getWinnerTeam().ifPresent(team -> {
+            winnerTeam = team;
+            status = GameStatus.FINISHED;
+        });
+        // 駒の成り処理
+        if (m1.promote() && board.isInPromotionZone(board.find(m1.piece()), m1.player().getTeam())) {
+            board.promotePiece(m1.piece());
+        }
+        if (m2.promote() && board.isInPromotionZone(board.find(m2.piece()), m2.player().getTeam())) {
+            board.promotePiece(m2.piece());
+        }
+        turnManager.nextTurn();
+
     }
 
+    /**
+     * ゲームの状態を返す
+     * 
+     * @return status
+     */
+    public GameStatus getStatus() {
+        return status;
+    }
+
+    /**
+     * 勝利チームを返す
+     * 
+     * @return 勝利チーム(勝利チームが確定していないときは{@code null})
+     */
+    public Team getWinnerTeam() {
+        return winnerTeam;
+    }
+
+    /**
+     * 現在のターンのチームを返す
+     * 
+     * @return Team
+     */
+    public Team getCurrentTurn() {
+        return turnManager.getCurrentTurn();
+    }
+
+    /**
+     * 現在の盤面を返す
+     * 
+     * @return Board
+     */
+    public Board getBoard() {
+        return board;
+    }
 }
