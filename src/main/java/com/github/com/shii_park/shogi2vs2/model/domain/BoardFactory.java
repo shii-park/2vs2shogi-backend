@@ -14,15 +14,6 @@ import com.github.com.shii_park.shogi2vs2.model.enums.Team;
  * @author Suiren91
  */
 public class BoardFactory {
-    private int pawnNum = 1;
-    private int lanceNum = 1;
-    private int knightNum = 1;
-    private int silverNum = 1;
-    private int goldNum = 1;
-    private int bishopNum = 1;
-    private int rookNum = 1;
-    private int kingNum = 1;
-
     /**
      * 標準の初期盤面を生成
      *
@@ -30,6 +21,14 @@ public class BoardFactory {
      */
     public Board createBoard() {
         Map<Piece, Position> initialPieces = new HashMap<>();
+        int pawnNum = 1;
+        int lanceNum = 1;
+        int knightNum = 1;
+        int silverNum = 1;
+        int goldNum = 1;
+        int bishopNum = 1;
+        int rookNum = 1;
+        int kingNum = 1;
 
         // FIRST_1段目
         initialPieces.put(new Piece(lanceNum++, PieceType.LANCE, Team.FIRST, true), new Position(1, 1));
