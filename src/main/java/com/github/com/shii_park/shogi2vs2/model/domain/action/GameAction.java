@@ -17,5 +17,5 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public interface GameAction {
     String getUserId();
     String getTeamId();
-    Instant at();
+    Instant getAt();
 }
