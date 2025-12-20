@@ -15,13 +15,13 @@ import org.springframework.stereotype.Service;
 public class GameTimeService {
 
     // 循環参照を防ぐため @Lazy をつけます
-    @Autowired
-    @Lazy
-    private GameRoomService gameRoomService;
+    // @Autowired
+    // @Lazy
+    // private GameRoomService gameRoomService;
 
     // ゲームIDと「実行予定のタイマー」を紐づけるマップ
     private final Map<String, ScheduledFuture<?>> timers = new ConcurrentHashMap<>();
-    
+
     // タイマーを実行する裏方のスレッド（4つあれば十分）
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
 
@@ -40,7 +40,7 @@ public class GameTimeService {
             try {
                 // 時間が来たらここが実行される
                 System.out.println("⏰ タイムアウト発生: " + gameId);
-                gameRoomService.handleTimeout(gameId);
+                // gameRoomService.handleTimeout(gameId);
             } catch (Exception e) {
                 e.printStackTrace();
             }

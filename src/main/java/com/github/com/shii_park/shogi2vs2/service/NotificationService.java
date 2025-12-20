@@ -16,6 +16,7 @@ import com.github.com.shii_park.shogi2vs2.model.domain.action.GameAction;
 import com.github.com.shii_park.shogi2vs2.model.domain.action.MoveAction;
 import com.github.com.shii_park.shogi2vs2.model.domain.Position;
 import com.github.com.shii_park.shogi2vs2.model.enums.Direction;
+import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
 @Service
 public class NotificationService {
@@ -35,7 +36,8 @@ public class NotificationService {
     // ターン実行結果 (反転あり)
     public void broadcastTurnResult(String gameId, List<TurnExecutionResult> results) {
         List<WebSocketSession> sessions = webSocketHandler.getSessions(gameId);
-        if (sessions == null || sessions.isEmpty()) return;
+        if (sessions == null || sessions.isEmpty())
+            return;
 
         try {
             // 1. Team1用 (そのまま) のメッセージを作る
@@ -48,7 +50,8 @@ public class NotificationService {
                 reversedResults.add(reverseResult(res));
             }
             String jsonReversed = objectMapper.writeValueAsString(reversedResults);
-            TextMessage msgReversed = new TextMessage(String.format("{\"type\":\"moveResult\",\"data\":%s}", jsonReversed));
+            TextMessage msgReversed = new TextMessage(
+                    String.format("{\"type\":\"moveResult\",\"data\":%s}", jsonReversed));
 
             // 3. 配る
             for (WebSocketSession s : sessions) {
@@ -68,7 +71,8 @@ public class NotificationService {
     // タイムアウト (反転あり)
     public void broadcastTimeout(String gameId, List<GameAction> pendingActions) {
         List<WebSocketSession> sessions = webSocketHandler.getSessions(gameId);
-        if (sessions == null || sessions.isEmpty()) return;
+        if (sessions == null || sessions.isEmpty())
+            return;
 
         try {
             // 1. Team1用メッセージ
@@ -81,7 +85,8 @@ public class NotificationService {
                 reversedActions.add(reverseAction(act));
             }
             String jsonReversed = objectMapper.writeValueAsString(reversedActions);
-            TextMessage msgReversed = new TextMessage(String.format("{\"type\":\"timeUp\", \"actions\":%s}", jsonReversed));
+            TextMessage msgReversed = new TextMessage(
+                    String.format("{\"type\":\"timeUp\", \"actions\":%s}", jsonReversed));
 
             // 3. 配る
             for (WebSocketSession s : sessions) {
@@ -100,26 +105,34 @@ public class NotificationService {
 
     public void sendToUser(String gameId, String userId, String message) {
         List<WebSocketSession> sessions = webSocketHandler.getSessions(gameId);
-        if (sessions == null) return;
-        
-        for(WebSocketSession s : sessions) {
-            if(userId.equals(s.getAttributes().get("userId"))) {
+        if (sessions == null)
+            return;
+
+        for (WebSocketSession s : sessions) {
+            if (userId.equals(s.getAttributes().get("userId"))) {
                 try {
-                    if (s.isOpen()) s.sendMessage(new TextMessage(message));
-                } catch(Exception e){ e.printStackTrace(); }
+                    if (s.isOpen())
+                        s.sendMessage(new TextMessage(message));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
 
     private void broadcastRaw(String gameId, String message) {
         List<WebSocketSession> sessions = webSocketHandler.getSessions(gameId);
-        if (sessions == null) return;
-        
+        if (sessions == null)
+            return;
+
         TextMessage textMessage = new TextMessage(message);
-        for(WebSocketSession s : sessions) {
+        for (WebSocketSession s : sessions) {
             try {
-                if (s.isOpen()) s.sendMessage(textMessage);
-            } catch(Exception e){ e.printStackTrace(); }
+                if (s.isOpen())
+                    s.sendMessage(textMessage);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -129,13 +142,15 @@ public class NotificationService {
         for (String d : original.directions()) {
             reversedDirs.add(reverseDirString(d));
         }
-        return new TurnExecutionResult(original.type(), original.pieceId(), reversedDirs, original.team(), original.promoted());
+        return new TurnExecutionResult(original.type(), original.pieceId(), reversedDirs, original.team(),
+                original.promoted());
     }
-    
+
     private GameAction reverseAction(GameAction action) {
         if (action instanceof MoveAction m) {
             List<Direction> rDirs = new ArrayList<>();
-            for(Direction d : m.directions()) rDirs.add(d.reverse());
+            for (Direction d : m.directions())
+                rDirs.add(d.forTeam(Team.SECOND));
             return new MoveAction(m.userId(), m.teamId(), m.pieceId(), rDirs, m.promote(), m.at());
         } else if (action instanceof DropAction d) {
             // 将棋盤は0-8なので、8-xで反転
@@ -146,6 +161,10 @@ public class NotificationService {
     }
 
     private String reverseDirString(String dir) {
-        try { return Direction.valueOf(dir).reverse().name(); } catch(Exception e) { return dir; }
+        try {
+            return Direction.valueOf(dir).forTeam(Team.SECOND).name();
+        } catch (Exception e) {
+            return dir;
+        }
     }
 }

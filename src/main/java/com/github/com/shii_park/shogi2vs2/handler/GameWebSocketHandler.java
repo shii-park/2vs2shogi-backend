@@ -14,15 +14,15 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import com.github.com.shii_park.shogi2vs2.service.GameRoomService;
+// import com.github.com.shii_park.shogi2vs2.service.GameRoomService;
 
 @Component
 public class GameWebSocketHandler extends TextWebSocketHandler {
 
-    // 循環参照回避のため @Lazy を付与
-    @Autowired
-    @Lazy
-    private GameRoomService gameRoomService;
+    // // 循環参照回避のため @Lazy を付与
+    // @Autowired
+    // @Lazy
+    // private GameRoomService gameRoomService;
 
     // ゲームIDごとにセッションのリストを管理するマップ
     private final Map<String, List<WebSocketSession>> gameSessions = new ConcurrentHashMap<>();
@@ -49,7 +49,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             List<WebSocketSession> sessions = gameSessions.get(gameId);
             if (sessions.size() == 4) {
                 System.out.println("Starting game: " + gameId);
-                gameRoomService.initializeGame(gameId, sessions);
+                // gameRoomService.initializeGame(gameId, sessions);
             }
         } else {
             session.close(CloseStatus.BAD_DATA);
@@ -66,7 +66,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         String payload = message.getPayload();
 
         if (gameId != null && userId != null) {
-            gameRoomService.handleMessage(gameId, userId, payload);
+            // gameRoomService.handleMessage(gameId, userId, payload);
         }
     }
 
@@ -82,7 +82,7 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
             List<WebSocketSession> sessions = gameSessions.get(gameId);
             if (sessions != null) {
                 sessions.remove(session);
-                
+
                 // メモリリーク対策: 誰もいなくなったら部屋ごとマップから消す
                 if (sessions.isEmpty()) {
                     gameSessions.remove(gameId);
