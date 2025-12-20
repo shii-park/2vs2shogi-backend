@@ -14,12 +14,18 @@ import com.github.com.shii_park.shogi2vs2.model.enums.Team;
  * @author Suiren91
  */
 public class BoardFactory {
+    
+    // ユーティリティクラスなのでインスタンス化を防ぐ
+    private BoardFactory() {
+        throw new UnsupportedOperationException("Utility class");
+    }
+    
     /**
      * 標準の初期盤面を生成
      *
      * @return 生成した盤面(not {@code null})
      */
-    public Board createBoard() {
+    public static Board createBoard() {
         Map<Piece, Position> initialPieces = new HashMap<>();
         int pawnNum = 1;
         int lanceNum = 1;
