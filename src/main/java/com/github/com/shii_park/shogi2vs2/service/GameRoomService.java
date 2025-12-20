@@ -6,24 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-// --- Model / Domain ---
-import com.github.com.shii_park.shogi2vs2.model.domain.Board;
-import com.github.com.shii_park.shogi2vs2.model.domain.BoardFactory;
-import com.github.com.shii_park.shogi2vs2.model.domain.Game;
-import com.github.com.shii_park.shogi2vs2.model.domain.Piece;
-import com.github.com.shii_park.shogi2vs2.model.domain.Player;
-import com.github.com.shii_park.shogi2vs2.model.domain.Position;
-import com.github.com.shii_park.shogi2vs2.model.domain.TurnExecutionResult;
-import com.github.com.shii_park.shogi2vs2.model.domain.action.DropAction;
-import com.github.com.shii_park.shogi2vs2.model.domain.action.GameAction;
-import com.github.com.shii_park.shogi2vs2.model.domain.action.MoveAction;
-import com.github.com.shii_park.shogi2vs2.model.domain.PlayerDropPiece;
-import com.github.com.shii_park.shogi2vs2.model.domain.PlayerMove;
-import com.github.com.shii_park.shogi2vs2.model.enums.Direction;
-import com.github.com.shii_park.shogi2vs2.model.enums.PieceType;
-import com.github.com.shii_park.shogi2vs2.model.enums.Team;
-
-// --- Spring / Web ---
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.WebSocketSession;
@@ -31,6 +13,21 @@ import org.springframework.web.socket.WebSocketSession;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.com.shii_park.shogi2vs2.handler.GameWebSocketHandler;
+import com.github.com.shii_park.shogi2vs2.model.domain.Board;
+import com.github.com.shii_park.shogi2vs2.model.domain.BoardFactory;
+import com.github.com.shii_park.shogi2vs2.model.domain.Game;
+import com.github.com.shii_park.shogi2vs2.model.domain.Piece;
+import com.github.com.shii_park.shogi2vs2.model.domain.Player;
+import com.github.com.shii_park.shogi2vs2.model.domain.PlayerDropPiece;
+import com.github.com.shii_park.shogi2vs2.model.domain.PlayerMove;
+import com.github.com.shii_park.shogi2vs2.model.domain.Position;
+import com.github.com.shii_park.shogi2vs2.model.domain.TurnExecutionResult;
+import com.github.com.shii_park.shogi2vs2.model.domain.action.DropAction;
+import com.github.com.shii_park.shogi2vs2.model.domain.action.GameAction;
+import com.github.com.shii_park.shogi2vs2.model.domain.action.MoveAction;
+import com.github.com.shii_park.shogi2vs2.model.enums.Direction;
+import com.github.com.shii_park.shogi2vs2.model.enums.PieceType;
+import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
 @Service
 public class GameRoomService {
@@ -120,7 +117,7 @@ public class GameRoomService {
 
     public void handleTimeout(String gameId) {
         Game game = games.get(gameId);
-        if(gameId == null)return;
+        if(game == null)return;
 
         gameTimeService.stopTimer(gameId);
 
@@ -238,11 +235,41 @@ public class GameRoomService {
 
     private List<Direction> convertToDirectionList(int dx, int dy) {
         List<Direction> dirs = new ArrayList<>();
+
+        // 1. まず「完全一致」を探す
+        // (桂馬、または1マスだけの移動ならここで即決)
         for (Direction d : Direction.values()) {
             if (d.dx == dx && d.dy == dy) {
                 dirs.add(d);
+                return dirs; 
             }
         }
+
+        // 2. 完全一致しない = 「長距離移動 (スライド)」
+        // まず、1マスあたりの方向(単位ベクトル)を出す
+        int unitX = Integer.signum(dx); // 例: 0
+        int unitY = Integer.signum(dy); // 例: 1
+
+        // 移動回数（距離）を計算
+        // 将棋の動きなら、dxかdyの絶対値の大きい方が「マス数」になる
+        int steps = Math.max(Math.abs(dx), Math.abs(dy));
+
+        // その方向のDirectionを探す
+        Direction unitDir = null;
+        for (Direction d : Direction.values()) {
+            if (d.dx == unitX && d.dy == unitY) {
+                unitDir = d;
+                break;
+            }
+        }
+
+        // 3. 距離の分だけリストに追加する [UP, UP, UP]
+        if (unitDir != null) {
+            for (int i = 0; i < steps; i++) {
+                dirs.add(unitDir);
+            }
+        }
+
         return dirs;
     }
 
