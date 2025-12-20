@@ -247,7 +247,7 @@ public class Board {
     /**
      * IDと種類から、盤上（または管理下）にある駒の実体を探す
      * GameRoomServiceのMoveAction処理で使用
-     * * @param id   駒のID
+     * @param id   駒のID
      * @param type 駒の種類
      * @return 見つかったPiece (なければnull)
      */
