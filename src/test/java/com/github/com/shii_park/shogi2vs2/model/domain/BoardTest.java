@@ -182,7 +182,7 @@ class BoardTest {
 
     /**
      * 盤外への移動（ドロップ）テスト
-     * 処理: 盤面の端から外に出る移動でDROPPEDが返ることを確認
+     * 処理: 盤面の端から外に出る移動でFALLEDが返ることを確認
      */
     @Test
     void testMoveOneStepDropped() {
@@ -191,7 +191,7 @@ class BoardTest {
         // さらに右に移動しようとすると盤外に出る
         MoveResult result = board.moveOneStep(piece1, Direction.RIGHT);
         // 盤外に落ちたことを確認
-        assertEquals(MoveResult.DROPPED, result);
+        assertEquals(MoveResult.FELL, result);
     }
 
     /**

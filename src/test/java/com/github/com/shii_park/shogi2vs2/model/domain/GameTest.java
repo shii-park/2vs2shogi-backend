@@ -2,7 +2,6 @@ package com.github.com.shii_park.shogi2vs2.model.domain;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,9 +77,9 @@ class GameTest {
     @Test
     void testApplyMovesNormalMove() {
         // player1の移動：piece1を上に1マス移動、成りなし
-        PlayerMove move1 = new PlayerMove(player1, piece1, List.of(Direction.UP), false, Instant.now());
+        PlayerMove move1 = new PlayerMove(player1, piece1, List.of(Direction.UP), false);
         // player2の移動：piece2を下に1マス移動、成りなし
-        PlayerMove move2 = new PlayerMove(player2, piece2, List.of(Direction.DOWN), false, Instant.now());
+        PlayerMove move2 = new PlayerMove(player2, piece2, List.of(Direction.DOWN), false);
 
         // 両プレイヤーの移動を適用
         game.applyMove(move1);
@@ -101,9 +100,9 @@ class GameTest {
         // piece1を成りエリア手前(5, 6)に移動
         board.movePiece(piece1, new Position(5, 6));
         // player1の移動：上に移動して成りを選択
-        PlayerMove move1 = new PlayerMove(player1, piece1, List.of(Direction.UP), true, Instant.now());
+        PlayerMove move1 = new PlayerMove(player1, piece1, List.of(Direction.UP), true);
         // player2の移動：通常移動
-        PlayerMove move2 = new PlayerMove(player2, piece2, List.of(Direction.DOWN), false, Instant.now());
+        PlayerMove move2 = new PlayerMove(player2, piece2, List.of(Direction.DOWN), false);
 
         // 移動を適用
         game.applyMove(move1);
@@ -126,8 +125,8 @@ class GameTest {
         board.movePiece(piece1, new Position(5, 5));
 
         // piece1が上に移動して王将を捕獲
-        PlayerMove move1 = new PlayerMove(player1, piece1, List.of(Direction.UP), false, Instant.now());
-        PlayerMove move2 = new PlayerMove(player2, piece2, List.of(Direction.DOWN), false, Instant.now());
+        PlayerMove move1 = new PlayerMove(player1, piece1, List.of(Direction.UP), false);
+        PlayerMove move2 = new PlayerMove(player2, piece2, List.of(Direction.DOWN), false);
 
         // 移動を適用
         game.applyMove(move1);
@@ -169,8 +168,8 @@ class GameTest {
      */
     @Test
     void testTurnProgression() {
-        PlayerMove move1 = new PlayerMove(player1, piece1, List.of(Direction.UP), false, Instant.now());
-        PlayerMove move2 = new PlayerMove(player2, piece2, List.of(Direction.DOWN), false, Instant.now());
+        PlayerMove move1 = new PlayerMove(player1, piece1, List.of(Direction.UP), false);
+        PlayerMove move2 = new PlayerMove(player2, piece2, List.of(Direction.DOWN), false);
 
         // 初期状態でFIRSTチームのターン
         assertEquals(Team.FIRST, game.getCurrentTurn());
@@ -191,9 +190,8 @@ class GameTest {
         // piece1を初期位置に配置
         board.movePiece(piece1, new Position(5, 5));
         // 上に2マス移動する指示
-        PlayerMove move1 = new PlayerMove(player1, piece1, List.of(Direction.UP, Direction.UP), false,
-                Instant.now());
-        PlayerMove move2 = new PlayerMove(player2, piece2, List.of(Direction.DOWN), false, Instant.now());
+        PlayerMove move1 = new PlayerMove(player1, piece1, List.of(Direction.UP, Direction.UP), false);
+        PlayerMove move2 = new PlayerMove(player2, piece2, List.of(Direction.DOWN), false);
 
         // 移動を適用
         game.applyMove(move1);
@@ -214,8 +212,8 @@ class GameTest {
         board.stackPiece(new Position(5, 6), king);
 
         // piece1が王将のいる位置に移動（捕獲）
-        PlayerMove move1 = new PlayerMove(player1, piece1, List.of(Direction.UP), false, Instant.now());
-        PlayerMove move2 = new PlayerMove(player2, piece2, List.of(Direction.DOWN), false, Instant.now());
+        PlayerMove move1 = new PlayerMove(player1, piece1, List.of(Direction.UP), false);
+        PlayerMove move2 = new PlayerMove(player2, piece2, List.of(Direction.DOWN), false);
 
         // 移動を適用
         game.applyMove(move1);
