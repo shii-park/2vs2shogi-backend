@@ -1,5 +1,8 @@
 package com.github.com.shii_park.shogi2vs2.model.domain;
 
+import java.util.List;
+
+import com.github.com.shii_park.shogi2vs2.model.enums.Direction;
 import com.github.com.shii_park.shogi2vs2.model.enums.PieceType;
 import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
@@ -27,6 +30,48 @@ public class Piece {
         this.team = team;
         this.isPromoted = false;
         this.isPromotable = promotable;
+    }
+
+    /**
+     * この駒が移動可能な方向のリストを返す
+     * チームに応じて方向を調整する
+     * 
+     * @return 移動可能な方向のリスト
+     */
+    public List<Direction> getMovableDirections() {
+        return type.getMovableDirections(isPromoted).stream()
+                .map(dir -> dir.forTeam(team))
+                .toList();
+    }
+
+    /**
+     * 指定方向に移動可能か
+     * 
+     * @return {@code true}:移動可能
+     */
+    public boolean canMoveToDirection(Direction direction) {
+        return getMovableDirections().contains(direction);
+    }
+
+    /**
+     * 連続移動可能か
+     * 
+     * @return {@code true}:連続移動可能
+     */
+    public boolean canMoveMultipleSteps() {
+        return type.canMoveMultipleSteps(isPromoted);
+    }
+
+    /**
+     * 指定方向に連続移動可能か
+     * （飛車は縦横のみ、角行は斜めのみ連続移動可）
+     * 
+     * @return {@code true}:指定方向に連続移動可能
+     */
+    public boolean canMoveMultipleStepsInDirection(Direction direction) {
+        // チームに応じて方向を逆変換
+        Direction normalizedDir = direction.forTeam(team);
+        return type.canMoveMultipleStepsInDirection(normalizedDir, isPromoted);
     }
 
     public int getId() {
