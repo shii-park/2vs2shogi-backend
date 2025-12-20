@@ -170,38 +170,35 @@ public class GameRoomService {
 
 
     private GameAction convertToGameAction(String userId, String teamId, JsonNode root, String type) {
-        boolean isTeam2 = "SECOND".equals(teamId); // または "TEAM_2"
-
+        
         if ("moveRequest".equals(type)) {
-            // --- 移動指令 ---
             int dx = root.path("direction").path("x").asInt();
             int dy = root.path("direction").path("y").asInt();
             int pieceId = root.path("piece").asInt(); 
             boolean promote = root.path("promote").asBoolean();
 
-            // ★Team2なら入力方向を反転
-            if (isTeam2) {
-                dx = -dx;
-                dy = -dy;
-            }
-            
-            // (dx, dy) を [UP, UP, UP] のようなリストに変換
-            List<Direction> dirs = convertToDirectionList(dx, dy);
+            // そのまま「ユーザーが見たままの方向」としてリスト化します
+            List<Direction> rawDirs = convertToDirectionList(dx, dy);
 
-            return new MoveAction(userId, teamId, pieceId, dirs, promote, Instant.now());
+            // Streamを使って新しいリストを作ります (forEachでの書き換えはできないため)
+            List<Direction> normalizedDirs = new ArrayList<>();
+            for (Direction d : rawDirs) {
+                normalizedDirs.add(d.normalize(teamId));
+            }
+
+            return new MoveAction(userId, teamId, pieceId, normalizedDirs, promote, Instant.now());
 
         } else {
-            // --- 打つ指令 ---
+            // ... DropAction側は変更なし (座標計算が必要なため) ...
+            // (もしDropもEnum管理するなら同様ですが、現状は座標なので8-xのまま)
             int x = root.path("position").path("x").asInt();
             int y = root.path("position").path("y").asInt();
             String pieceType = root.path("piece").asText();
 
             Position pos = new Position(x, y);
-            // ★Team2なら座標を180度回転 (正規化)
-            if (isTeam2) {
-                pos = boardcoordinateService.normalize(pos, teamId);
+            if ("SECOND".equals(teamId)) {
+                pos = coordinateService.normalize(pos, teamId);
             }
-
             return new DropAction(userId, teamId, pieceType, pos, Instant.now());
         }
     }
@@ -211,43 +208,34 @@ public class GameRoomService {
      * 例: (0, 3) -> [UP, UP, UP]
      * 例: (1, 2) -> [KNIGHT_RIGHT]
      */
-    private List<Direction> convertToDirectionList(int dx, int dy) {
-        List<Direction> list = new ArrayList<>();
-        if (dx == 0 && dy == 0) return list;
-
-        // 1. 桂馬 (Knight) の判定
-        for (Direction d : Direction.values()) {
-            if (isKnight(d) && d.dx == dx && d.dy == dy) {
-                list.add(d);
-                return list;
+    private TurnExecutionResult reverseResult(TurnExecutionResult original) {
+        List<String> reversedDirs = new ArrayList<>();
+        for (String dStr : original.directions()) {
+            // 文字列からEnumに戻す
+            Direction dir = Direction.valueOf(dStr);
+            
+            // ★修正点: 「Team2視点」に変換するために normalize("SECOND") を使う
+            // (入力の時と同じメソッドを使えば、反対の反対で元に戻る原理です)
+            reversedDirs.add(dir.normalize("SECOND").name());
+        }
+        return new TurnExecutionResult(original.type(), original.pieceId(), reversedDirs, original.team(), original.promoted());
+    }
+    
+    private GameAction reverseAction(GameAction action) {
+        if (action instanceof MoveAction m) {
+            List<Direction> rDirs = new ArrayList<>();
+            for(Direction d : m.directions()) {
+                // ★修正点: ここも normalize("SECOND") に統一
+                rDirs.add(d.normalize("SECOND"));
             }
+            return new MoveAction(m.userId(), m.teamId(), m.pieceId(), rDirs, m.promote(), m.at());
+        } 
+        // ... DropAction はそのまま ...
+        else if (action instanceof DropAction d) {
+             Position rPos = new Position(8 - d.position().x(), 8 - d.position().y());
+             return new DropAction(d.userId(), d.teamId(), d.pieceType(), rPos, d.at());
         }
-
-        // 2. 通常の移動 (歩・香・飛・角・銀・金・王)
-        int signX = Integer.signum(dx);
-        int signY = Integer.signum(dy);
-
-        // 向きが一致するDirectionを探す
-        Direction unitDir = null;
-        for (Direction d : Direction.values()) {
-            // 桂馬は除外して、向き(sign)だけで判定
-            if (!isKnight(d) && d.dx == signX && d.dy == signY) {
-                unitDir = d;
-                break;
-            }
-        }
-
-        if (unitDir == null) return list; // 定義外の移動
-
-        // ステップ数 (距離)
-        int steps = Math.max(Math.abs(dx), Math.abs(dy));
-
-        // ステップ数分だけリストに追加 (例: UP, UP, UP)
-        for (int i = 0; i < steps; i++) {
-            list.add(unitDir);
-        }
-
-        return list;
+        return action;
     }
 
     private boolean isKnight(Direction d) {
