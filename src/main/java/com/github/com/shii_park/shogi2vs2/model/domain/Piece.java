@@ -45,8 +45,9 @@ public class Piece {
     }
 
     /**
-     * 指定方向に移動可能か
+     * 指定方向に移動可能か判定する
      * 
+     * @param direction 移動方向
      * @return {@code true}:移動可能
      */
     public boolean canMoveToDirection(Direction direction) {
@@ -54,7 +55,7 @@ public class Piece {
     }
 
     /**
-     * 連続移動可能か
+     * 連続移動可能か判定する
      * 
      * @return {@code true}:連続移動可能
      */
