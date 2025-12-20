@@ -46,6 +46,31 @@ public class CapturedPieces {
         return winnerTeam;
     }
 
+    /**
+     * 手駒から駒を取り出す。駒のidは考慮しない
+     * 
+     * @param team  駒を取り出したいチーム
+     * @param piece 取り出す駒
+     * @return 取り出した駒を返す。手駒に存在しなかった場合は{@code null}
+     */
+    public Piece getCapturedPiece(Team team, Piece piece) {
+        List<Piece> pieces = capturedPieces.get(team);
+        if (pieces == null) {
+            return null;
+        }
+
+        synchronized (pieces) {
+            for (int i = 0; i < pieces.size(); i++) {
+                Piece captured = pieces.get(i);
+                if (captured.getType() == piece.getType()) {
+                    pieces.remove(i);
+                    return captured;
+                }
+            }
+        }
+        return null;
+    }
+
     // TODO: winnerTeamを決める処理を別途追加
     /**
      * 駒を捕獲する

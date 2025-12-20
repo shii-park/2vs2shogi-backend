@@ -147,4 +147,73 @@ class CapturedPiecesTest {
         assertEquals(1, capturedPieces.getCapturedPieces(Team.FIRST).size());
         assertEquals(1, capturedPieces.getCapturedPieces(Team.SECOND).size());
     }
+
+    /**
+     * 手駒から駒を取り出すテスト
+     * 処理: 捕獲した駒を手駒から取り出せることを確認
+     */
+    @Test
+    void testGetCapturedPiece() {
+        // FIRSTチームがpawn2を捕獲
+        capturedPieces.capturedPiece(Team.FIRST, pawn2);
+        // FIRSTチームの捕獲リストに1つの駒が含まれることを確認
+        assertEquals(1, capturedPieces.getCapturedPieces(Team.FIRST).size());
+        // pawn2と同じタイプの駒を取り出す
+        Piece retrieved = capturedPieces.getCapturedPiece(Team.FIRST, pawn2);
+        // 取り出した駒がpawn2であることを確認
+        assertEquals(pawn2, retrieved);
+        // 捕獲リストから駒が削除されたことを確認
+        assertEquals(0, capturedPieces.getCapturedPieces(Team.FIRST).size());
+    }
+
+    /**
+     * 手駒に存在しない駒を取り出すテスト
+     * 処理: 手駒に存在しない駒を取り出そうとするとnullが返ることを確認
+     */
+    @Test
+    void testGetCapturedPieceNotFound() {
+        // 何も捕獲していない状態でpawn1を取り出そうとする
+        Piece retrieved = capturedPieces.getCapturedPiece(Team.FIRST, pawn1);
+        // nullが返ることを確認
+        assertNull(retrieved);
+    }
+
+    /**
+     * 手駒から同じタイプの駒を取り出すテスト
+     * 処理: 同じタイプの駒が複数ある場合、最初に見つかった駒を取り出すことを確認
+     */
+    @Test
+    void testGetCapturedPieceSameType() {
+        // FIRSTチームがpawn2を捕獲
+        capturedPieces.capturedPiece(Team.FIRST, pawn2);
+        // 新しい歩兵を生成して捕獲
+        Piece pawn3 = new Piece(4, PieceType.PAWN, Team.SECOND, true);
+        capturedPieces.capturedPiece(Team.FIRST, pawn3);
+        // FIRSTチームの捕獲リストに2つの駒が含まれることを確認
+        assertEquals(2, capturedPieces.getCapturedPieces(Team.FIRST).size());
+        // 歩兵タイプの駒を取り出す
+        Piece retrieved = capturedPieces.getCapturedPiece(Team.FIRST, new Piece(99, PieceType.PAWN, Team.FIRST, false));
+        // 取り出した駒がnullでないことを確認
+        assertNotNull(retrieved);
+        // 取り出した駒のタイプが歩兵であることを確認
+        assertEquals(PieceType.PAWN, retrieved.getType());
+        // 捕獲リストから1つ減ったことを確認
+        assertEquals(1, capturedPieces.getCapturedPieces(Team.FIRST).size());
+    }
+
+    /**
+     * 異なるタイプの駒を取り出すテスト
+     * 処理: 手駒に存在しないタイプの駒を取り出そうとするとnullが返ることを確認
+     */
+    @Test
+    void testGetCapturedPieceDifferentType() {
+        // FIRSTチームが歩兵を捕獲
+        capturedPieces.capturedPiece(Team.FIRST, pawn2);
+        // 歩兵ではなく王将タイプの駒を取り出そうとする
+        Piece retrieved = capturedPieces.getCapturedPiece(Team.FIRST, king);
+        // nullが返ることを確認
+        assertNull(retrieved);
+        // 手駒は削除されていないことを確認
+        assertEquals(1, capturedPieces.getCapturedPieces(Team.FIRST).size());
+    }
 }
