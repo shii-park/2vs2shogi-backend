@@ -14,12 +14,12 @@ import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 public class BoardFactory {
     private int pawnNum = 1;
     private int lanceNum = 1;
-    private int knightNum = 1; // 桂: 1-4
-    private int silverNum = 1; // 銀: 1-4
-    private int goldNum = 1; // 金: 1-4
-    private int bishopNum = 1; // 角: 1-2
-    private int rookNum = 1; // 飛: 1-2
-    private int kingNum = 1; // 王: 1-2
+    private int knightNum = 1;
+    private int silverNum = 1;
+    private int goldNum = 1;
+    private int bishopNum = 1;
+    private int rookNum = 1;
+    private int kingNum = 1;
 
     /**
      * 標準の初期盤面を生成
