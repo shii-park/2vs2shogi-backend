@@ -1,165 +1,122 @@
 package com.github.com.shii_park.shogi2vs2.handler;
 
-import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.com.shii_park.shogi2vs2.dto.request.MoveRequest;
-import com.github.com.shii_park.shogi2vs2.service.GameContextService;
-import com.github.com.shii_park.shogi2vs2.service.InputSynthesisService;
-import com.github.com.shii_park.shogi2vs2.service.GameTimeService;
+import com.github.com.shii_park.shogi2vs2.service.GameRoomService;
+
 @Component
-public class GameWebSocketHandler extends TextWebSocketHandler{
-    @Autowired
-    private InputSynthesisService synthesisService;
+public class GameWebSocketHandler extends TextWebSocketHandler {
 
+    // 循環参照回避のため @Lazy を付与
     @Autowired
-    private GameContextService gameContextService;
-    @Autowired
-    private GameTimeService gameTimeService;
+    @Lazy
+    private GameRoomService gameRoomService;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
+    // ゲームIDごとにセッションのリストを管理するマップ
     private final Map<String, List<WebSocketSession>> gameSessions = new ConcurrentHashMap<>();
 
+    /**
+     * 接続確立時
+     */
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        String query = session.getUri().getQuery();
-        String gameId = extractParam(query, "gameId");
-        String userId = extractParam(query, "userId");
-        
-        if (gameId != null && userId != null){
-            session.getAttributes().put("gameId",gameId);
-            session.getAttributes().put("userId",userId);
-            gameSessions.computeIfAbsent(gameId, k-> new CopyOnWriteArrayList<>()).add(session);
-            System.out.println("Connected:" + userId +" to Game: "+ gameId);
+        Map<String, String> params = parseQuery(session.getUri());
+        String gameId = params.get("gameId");
+        String userId = params.get("userId");
+
+        if (gameId != null && userId != null) {
+            // セッションに属性として保存
+            session.getAttributes().put("gameId", gameId);
+            session.getAttributes().put("userId", userId);
+
+            // セッションリストに追加
+            addSession(gameId, session);
+            System.out.println("Connected: " + userId + " to Game: " + gameId);
+
+            // 4人揃ったらゲーム開始
+            List<WebSocketSession> sessions = gameSessions.get(gameId);
+            if (sessions.size() == 4) {
+                System.out.println("Starting game: " + gameId);
+                gameRoomService.initializeGame(gameId, sessions);
+            }
         } else {
             session.close(CloseStatus.BAD_DATA);
         }
     }
 
+    /**
+     * メッセージ受信時
+     */
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status)throws Exception {
-        String gameId = (String)session.getAttributes().get("gameId");
-
-        if(gameId != null){
-            List<WebSocketSession> sessions = gameSessions.get(gameid);
-            if(sessions != null){
-                sessions.remove(session);
-                if(sessions.isEmpty()){
-                    gameSessions.get(gameId).remove(session);
-                }
-            }
-        }
-    }
-
-    @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage message)throws Exception {
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        String gameId = (String) session.getAttributes().get("gameId");
+        String userId = (String) session.getAttributes().get("userId");
         String payload = message.getPayload();
-        MoveRequest request = objectMapper.readValue(payload, MoveRequest.class);
-        String gameId = (String)session.getAttributes().get("gameId");
-        String userId = (String)session.getAttributes().get("userId");
 
-        if(gameId == null) return;
-        String teamId = gameContextService.getUserTeam(gameId, userId);
-        
-        position normalizedFrom = boardCoordinateService.normalize(request.getFrom(), teamId);
-        position normalizedTo = boardCoordinateService.normalize(request.getTo(), teamId);
-        MoveRequest normalizedRequest = new MoveRequest(
-            request.getUserId(),
-            normalizedFrom,
-            normalizedTo,
-            request.isPromote()
-        );
-
-        List<MoveRequest> moves = synthesisService.handleInput(gameId, teamId, request);
-        if (moves == null){
-            session.sendMessage(new TextMessage("{\"status\":\"WAITING_PARTNER\"}"));
-        }else{
-            MoveRequest adoptedMove = normalizedRequest;
-            broadcastMoveResult(gameId,adoptedMove);
-            gameTimeService.startNewTurn(gameId);
+        if (gameId != null && userId != null) {
+            gameRoomService.handleMessage(gameId, userId, payload);
         }
     }
 
-    public void broadcastMoveResult(String gameId, MoveRequest executedMove){
-        List<WebSocketSession> sessions = gameSessions.get(gameId);
-        if(sessions = null) return;
+    /**
+     * 切断時
+     */
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        String gameId = (String) session.getAttributes().get("gameId");
+        String userId = (String) session.getAttributes().get("userId");
 
-        for(WebSocketSession session : sessions){
-            if(!session.isOpen()) continue;
-        
-
-            try{
-                String userId = (String) session.getAttributes().get("userId");
-                String teamId = gameContextService.getUserTeam(gameId, userId);
-
-                MoveRequest viewMove;
-
-                if("second".equals(teamId)){
-                    Position viewedFrom  = broadCoordinateService.normalize(executedMove.getFrom(),"second");
-                    Position viewedTo = broadCoordinateService.normalize(executedMove.getTo(),"second");
-
-                    viewMove = new MoveRequest(
-                        executedMove.getUserId(),
-                        viewedFrom,
-                        viewedTo,
-                        executedMove.isPromote()
-                    );
-                } else{
-                    viewMove = executedMove;
+        if (gameId != null) {
+            List<WebSocketSession> sessions = gameSessions.get(gameId);
+            if (sessions != null) {
+                sessions.remove(session);
+                
+                // メモリリーク対策: 誰もいなくなったら部屋ごとマップから消す
+                if (sessions.isEmpty()) {
+                    gameSessions.remove(gameId);
                 }
-
-                String resultJson = objectMapper.writeValueAsString(viewMove);
-                String responseMessage = String.format("{\"type\":\"MOVE_EXECUTED\",\"data\":%s}", resultJson);
-
-                session.sendMessage(new TextMessage(responseMessage));
-            } catch (Exception e){
-                e.printStackTrace();
             }
+            // 必要なら gameRoomService.leaveRoom(...) を呼ぶ
+            System.out.println("Disconnected: " + userId + " from " + gameId);
         }
     }
 
-    public void broadcastToGame(String gameId, String message){
-        List<WebSocketSession> sessions = gameSessions.get(gameId);
-        if (sessions != null){
-            for(WebSocketSession s : sessions){
-                if(s.isOpen()){
-                    try{
-                        s.sendMessage(new TextMessage(message));
-                    }catch(IOException e){
-                        e.printStackTrace();
-                    }
+    // --- 公開メソッド (NotificationServiceなどが使用) ---
+
+    public void addSession(String gameId, WebSocketSession session) {
+        // computeIfAbsent でスレッドセーフにリスト作成
+        gameSessions.computeIfAbsent(gameId, k -> new CopyOnWriteArrayList<>()).add(session);
+    }
+
+    public List<WebSocketSession> getSessions(String gameId) {
+        return gameSessions.get(gameId);
+    }
+
+    // --- 内部ヘルパー: URLクエリパラメータ解析 ---
+    private Map<String, String> parseQuery(URI uri) {
+        Map<String, String> queryPairs = new ConcurrentHashMap<>();
+        String query = uri.getQuery();
+        if (query != null) {
+            String[] pairs = query.split("&");
+            for (String pair : pairs) {
+                int idx = pair.indexOf("=");
+                if (idx > 0) {
+                    queryPairs.put(pair.substring(0, idx), pair.substring(idx + 1));
                 }
             }
         }
-    }
-
-    private String extractParam(String query, String key){
-        if(query == null)return null;
-        for(String param:query.split("&")){
-            String[] pair = param.split("=");
-            if(pair.length == 2 && pair[0].equals(key)){
-                return pair[1];
-            }
-        }
-        return null;
-    }
-
-    public void handleTimeout(String gameId){
-        GameTimeService.startNewTurn(gameId);
-
-        String timeUpMessage = "{\"type\":\"TIME_UP\",\"message\":\"Time is up for your turn.\"}";
-        broadcastToGame(gameId,timeUpMessage);
+        return queryPairs;
     }
 }

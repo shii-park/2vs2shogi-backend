@@ -10,11 +10,11 @@ public class MoveRecord {
     private final boolean promote;
     private final Instant at;
 
-    public MoveRecord(Team team,Position from,Position to,boolean promote){
-        this.team=team;
-        this.from=from;
-        this.to=to;
-        this.promote=promote;
-        this.at=Instant.now();
+    public MoveRecord(Team team, Position from, Position to, boolean promote) {
+        this.team = team;
+        this.from = from;
+        this.to = to;
+        this.promote = promote;
+        this.at = Instant.now();
     }
 }
