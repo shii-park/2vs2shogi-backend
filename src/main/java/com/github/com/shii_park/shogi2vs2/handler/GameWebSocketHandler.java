@@ -1,6 +1,8 @@
 package com.github.com.shii_park.shogi2vs2.handler;
 
 import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -106,17 +108,27 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
     // --- 内部ヘルパー: URLクエリパラメータ解析 ---
     private Map<String, String> parseQuery(URI uri) {
-        Map<String, String> queryPairs = new ConcurrentHashMap<>();
-        String query = uri.getQuery();
-        if (query != null) {
-            String[] pairs = query.split("&");
-            for (String pair : pairs) {
-                int idx = pair.indexOf("=");
-                if (idx > 0) {
-                    queryPairs.put(pair.substring(0, idx), pair.substring(idx + 1));
-                }
+    Map<String, String> queryPairs = new ConcurrentHashMap<>();
+    String query = uri.getQuery();
+    
+    if (query != null) {
+        String[] pairs = query.split("&");
+        for (String pair : pairs) {
+            int idx = pair.indexOf("=");
+            if (idx > 0) {
+                // キーと値を取り出す
+                String key = pair.substring(0, idx);
+                String value = pair.substring(idx + 1);
+
+                // ★ここでデコード（元の文字に戻す）処理を入れる
+                // StandardCharsets.UTF_8 を指定するのが一般的です
+                String decodedKey = URLDecoder.decode(key, StandardCharsets.UTF_8);
+                String decodedValue = URLDecoder.decode(value, StandardCharsets.UTF_8);
+
+                queryPairs.put(decodedKey, decodedValue);
             }
         }
-        return queryPairs;
+    }
+    return queryPairs;
     }
 }
