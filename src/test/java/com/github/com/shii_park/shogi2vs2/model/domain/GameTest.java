@@ -183,22 +183,33 @@ class GameTest {
 
     /**
      * 複数マス移動テスト
-     * 処理: 1つの移動コマンドで複数の方向を指定して、駒が連続して移動することを確認
+     * 処理: 飛車が連続して移動することを確認
      */
     @Test
     void testMultipleMoves() {
-        // piece1を初期位置に配置
-        board.movePiece(piece1, new Position(5, 5));
+        // 飛車を使用（連続移動可能な駒）
+        Piece rook = new Piece(1, PieceType.ROOK, Team.FIRST, true);
+        Position rookPos = new Position(5, 5);
+        
+        // 盤面に飛車を配置
+        Map<Piece, Position> initialPieces = new HashMap<>();
+        initialPieces.put(rook, rookPos);
+        initialPieces.put(piece2, new Position(6, 6));
+        Board newBoard = new Board(initialPieces);
+        
+        game = new Game("game1", List.of(player1, player2), newBoard, Team.FIRST);
+        
         // 上に2マス移動する指示
-        PlayerMove move1 = new PlayerMove(player1, piece1, List.of(Direction.UP, Direction.UP), false);
+        PlayerMove move1 = new PlayerMove(player1, rook, List.of(Direction.UP, Direction.UP), false);
         PlayerMove move2 = new PlayerMove(player2, piece2, List.of(Direction.DOWN), false);
 
         // 移動を適用
         game.applyMove(move1);
         game.applyMove(move2);
         game.handleTurnEnd();
-        // piece1が(5, 7)に移動したことを確認（2マス上）
-        assertEquals(new Position(5, 7), board.find(piece1));
+        
+        // rookが(5, 7)に移動したことを確認（2マス上）
+        assertEquals(new Position(5, 7), newBoard.find(rook));
     }
 
     /**
