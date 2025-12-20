@@ -59,12 +59,12 @@ public class Game {
         if (!board.isTop(move.piece())) {
             return;
         }
-        
+
         // 移動可能かチェック
         if (!isMovable(move.direction(), move.piece())) {
             return;
         }
-        
+
         // 飛車、角行など、複数マス移動する駒は繰り返し実行する
         for (Direction dir : move.direction()) {
             MoveResult res = board.moveOneStep(move.piece(), dir);
@@ -177,28 +177,28 @@ public class Game {
         if (directions == null || directions.isEmpty()) {
             return false;
         }
-        
+
         // 1. 各方向が移動可能な方向かチェック
         for (Direction dir : directions) {
             if (!piece.canMoveToDirection(dir)) {
                 return false;
             }
         }
-        
+
         // 2. 連続移動のチェック
         if (directions.size() > 1) {
             // 連続移動可能な駒かチェック
             if (!piece.canMoveMultipleSteps()) {
                 return false;
             }
-            
+
             // 3. 各方向が連続移動可能な方向かチェック
             for (Direction dir : directions) {
                 if (!piece.canMoveMultipleStepsInDirection(dir)) {
                     return false;
                 }
             }
-            
+
             // 同じ方向への連続移動かチェック（飛車・角・香は同じ方向にのみ連続移動可）
             Direction firstDir = directions.get(0);
             for (Direction dir : directions) {
@@ -207,7 +207,16 @@ public class Game {
                 }
             }
         }
-        
         return true;
+    }
+
+    /**
+     * プレイヤーのIdからPlayerインスタンスを返す
+     * 
+     * @param playerId 取得したいプレイヤーのid
+     * @return Player(存在しないときは{@code null})
+     */
+    public Player getPlayer(String playerId) {
+        return players.get(playerId);
     }
 }
