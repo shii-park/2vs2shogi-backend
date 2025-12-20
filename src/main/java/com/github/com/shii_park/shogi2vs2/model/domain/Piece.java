@@ -66,6 +66,7 @@ public class Piece {
      * 指定方向に連続移動可能か
      * （飛車は縦横のみ、角行は斜めのみ連続移動可）
      * 
+     * @param direction 連続移動したい方向
      * @return {@code true}:指定方向に連続移動可能
      */
     public boolean canMoveMultipleStepsInDirection(Direction direction) {
