@@ -11,7 +11,7 @@ public class BoardCoordinateService {
 
     /**
      * チームIDに応じて座標を正規化（反転）する
-     * * @param pos 元の座標
+     * @param pos 元の座標
      * @param teamId チームID ("FIRST" or "SECOND")
      * @return 正規化された座標
      */
