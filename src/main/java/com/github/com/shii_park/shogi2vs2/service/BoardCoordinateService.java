@@ -6,8 +6,8 @@ import com.github.com.shii_park.shogi2vs2.model.domain.Position;
 
 @Service
 public class BoardCoordinateService {
-    // 将棋盤の最大インデックス (9マスなので 0 〜 8)
-    private static final int BOARD_SIZE_INDEX = 8;
+    // 座標を1~9で実装しているため10から引く
+    private static final int BOARD_INDEX = 10;
 
     /**
      * チームIDに応じて座標を正規化（反転）する
@@ -24,7 +24,7 @@ public class BoardCoordinateService {
             // 例: (0, 0) -> (8, 8)
             // 例: (8, 8) -> (0, 0)
             // 例: (4, 4) -> (4, 4)
-            return new Position(BOARD_SIZE_INDEX - pos.x(), BOARD_SIZE_INDEX - pos.y());
+            return new Position(BOARD_INDEX - pos.x(), BOARD_INDEX - pos.y());
         }
 
         // Team1 (FIRST) なら何もしない
