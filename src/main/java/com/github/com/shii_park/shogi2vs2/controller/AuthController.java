@@ -25,7 +25,7 @@ public class AuthController {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
-    @GetMapping("/register")
+    @PostMapping("/register")
     public LoginResponse register(@RequestBody @Valid LoginRequest request) {
         System.out.println("[AuthController] 登録リクエストを受信しました。ユーザー名=" + request.getUsername());
         String userId = UUID.randomUUID().toString(); // ランダムなユーザーID生成
