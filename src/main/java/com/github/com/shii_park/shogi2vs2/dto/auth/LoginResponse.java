@@ -4,11 +4,11 @@ import lombok.Data;
 
 @Data
 public class LoginResponse {
-    private String userId; // ユーザーID
+    private String sessionId; // ユーザーID
     private String username; // ユーザー名
 
     public LoginResponse(String userId, String username) {
-        this.userId = userId;
+        this.sessionId = userId;
         this.username = username;
     }
 }
