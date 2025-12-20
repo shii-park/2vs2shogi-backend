@@ -33,6 +33,7 @@ public enum Direction {
 
     /**
      * チームによって正しいDirectionを出力
+     * Usage: Direction secondDir = dir.forTeam(SECOND)
      * 
      * @param team 移動したいチーム
      * @return FIRSTはそのまま、SECONDは反転した方向 (OPPO要素を渡すと{@code null})
