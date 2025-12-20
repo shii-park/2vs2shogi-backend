@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PreDestroy;
+
 @Service
 public class GameTimeService {
 
@@ -39,7 +41,7 @@ public class GameTimeService {
         ScheduledFuture<?> future = scheduler.schedule(() -> {
             try {
                 // 時間が来たらここが実行される
-                System.out.println("⏰ タイムアウト発生: " + gameId);
+                System.out.println(" タイムアウト発生: " + gameId);
                 gameRoomService.handleTimeout(gameId);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -58,6 +60,24 @@ public class GameTimeService {
         if (future != null) {
             // 予約を取り消す（false = もし実行中なら中断まではしない）
             future.cancel(false);
+        }
+    }
+
+    @PreDestroy
+    public void cleanup() {
+        System.out.println("Stopping timer scheduler...");
+        
+        // 新しいタスクの受付を停止する
+        scheduler.shutdown(); 
+        
+        try {
+            // 現在実行中のタスクが終わるのを少し待つ（必要なら）
+            // ここでは即座に強制終了させる shutdownNow() でもゲーム用途ならOK
+            if (!scheduler.awaitTermination(1, java.util.concurrent.TimeUnit.SECONDS)) {
+                scheduler.shutdownNow(); // タイムアウトしたら強制終了
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow(); // 割り込みが入ったら強制終了
         }
     }
 }
