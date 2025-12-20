@@ -8,6 +8,8 @@ import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
 /**
  * BoardFactoryクラスは標準的な初期盤面を生成するメソッドを提供します
+ * 駒の番号は1起点で駒の種類ごとに割り当てられ、チーム間で通し番号です
+ * 例: 歩兵(1~18),金将(1~4)
  * 
  * @author Suiren91
  */
@@ -23,7 +25,7 @@ public class BoardFactory {
 
     /**
      * 標準の初期盤面を生成
-     * 
+     *
      * @return 生成した盤面(not {@code null})
      */
     public Board createBoard() {
