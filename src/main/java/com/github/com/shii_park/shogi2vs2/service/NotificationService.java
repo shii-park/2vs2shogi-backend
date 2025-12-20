@@ -10,12 +10,13 @@ import org.springframework.web.socket.WebSocketSession;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.com.shii_park.shogi2vs2.handler.GameWebSocketHandler;
+import com.github.com.shii_park.shogi2vs2.model.domain.Position;
 import com.github.com.shii_park.shogi2vs2.model.domain.TurnExecutionResult;
 import com.github.com.shii_park.shogi2vs2.model.domain.action.DropAction;
 import com.github.com.shii_park.shogi2vs2.model.domain.action.GameAction;
 import com.github.com.shii_park.shogi2vs2.model.domain.action.MoveAction;
-import com.github.com.shii_park.shogi2vs2.model.domain.Position;
 import com.github.com.shii_park.shogi2vs2.model.enums.Direction;
+import com.github.com.shii_park.shogi2vs2.model.enums.Team; // ★Teamを追加
 
 @Service
 public class NotificationService {
@@ -24,6 +25,8 @@ public class NotificationService {
     private GameContextService gameContextService;
     @Autowired
     private GameWebSocketHandler webSocketHandler;
+    @Autowired
+    private BoardCoordinateService coordinateService;
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -38,11 +41,9 @@ public class NotificationService {
         if (sessions == null || sessions.isEmpty()) return;
 
         try {
-            // 1. Team1用 (そのまま) のメッセージを作る
             String jsonNormal = objectMapper.writeValueAsString(results);
             TextMessage msgNormal = new TextMessage(String.format("{\"type\":\"moveResult\",\"data\":%s}", jsonNormal));
 
-            // 2. Team2用 (反転済み) のメッセージを作る
             List<TurnExecutionResult> reversedResults = new ArrayList<>();
             for (TurnExecutionResult res : results) {
                 reversedResults.add(reverseResult(res));
@@ -50,7 +51,6 @@ public class NotificationService {
             String jsonReversed = objectMapper.writeValueAsString(reversedResults);
             TextMessage msgReversed = new TextMessage(String.format("{\"type\":\"moveResult\",\"data\":%s}", jsonReversed));
 
-            // 3. 配る
             for (WebSocketSession s : sessions) {
                 String userId = (String) s.getAttributes().get("userId");
                 String teamId = gameContextService.getUserTeam(gameId, userId);
@@ -71,19 +71,18 @@ public class NotificationService {
         if (sessions == null || sessions.isEmpty()) return;
 
         try {
-            // 1. Team1用メッセージ
             String jsonNormal = objectMapper.writeValueAsString(pendingActions);
             TextMessage msgNormal = new TextMessage(String.format("{\"type\":\"timeUp\", \"actions\":%s}", jsonNormal));
 
-            // 2. Team2用メッセージ
             List<GameAction> reversedActions = new ArrayList<>();
-            for (GameAction act : pendingActions) {
-                reversedActions.add(reverseAction(act));
+            if (pendingActions != null) {
+                for (GameAction act : pendingActions) {
+                    reversedActions.add(reverseAction(act));
+                }
             }
             String jsonReversed = objectMapper.writeValueAsString(reversedActions);
             TextMessage msgReversed = new TextMessage(String.format("{\"type\":\"timeUp\", \"actions\":%s}", jsonReversed));
 
-            // 3. 配る
             for (WebSocketSession s : sessions) {
                 String userId = (String) s.getAttributes().get("userId");
                 String teamId = gameContextService.getUserTeam(gameId, userId);
@@ -123,29 +122,58 @@ public class NotificationService {
         }
     }
 
-    // --- 反転ロジック (変更なし) ---
+    // --- 反転ロジック (Direction.forTeam を使用) ---
+
     private TurnExecutionResult reverseResult(TurnExecutionResult original) {
         List<String> reversedDirs = new ArrayList<>();
-        for (String d : original.directions()) {
-            reversedDirs.add(reverseDirString(d));
+        for (String dStr : original.directions()) {
+            try {
+                // ★修正: Direction.forTeam(Team.SECOND) を使用
+                Direction dir = Direction.valueOf(dStr);
+                reversedDirs.add(dir.forTeam(Team.SECOND).name());
+            } catch (IllegalArgumentException e) {
+                reversedDirs.add(dStr);
+            }
         }
-        return new TurnExecutionResult(original.type(), original.pieceId(), reversedDirs, original.team(), original.promoted());
+        return new TurnExecutionResult(
+            original.type(), 
+            original.pieceId(), 
+            original.pieceType(),
+            reversedDirs, 
+            original.teamId(), 
+            original.promote()
+        );
     }
     
     private GameAction reverseAction(GameAction action) {
         if (action instanceof MoveAction m) {
             List<Direction> rDirs = new ArrayList<>();
-            for(Direction d : m.directions()) rDirs.add(d.reverse());
-            return new MoveAction(m.userId(), m.teamId(), m.pieceId(), rDirs, m.promote(), m.at());
+            for(Direction d : m.directions()) {
+                // ★修正: Direction.forTeam(Team.SECOND) を使用
+                rDirs.add(d.forTeam(Team.SECOND));
+            }
+            return new MoveAction(
+                m.userId(), 
+                m.teamId(), 
+                m.pieceId(), 
+                m.pieceType(), 
+                rDirs, 
+                m.promote(), 
+                m.at()
+            );
+
         } else if (action instanceof DropAction d) {
-            // 将棋盤は0-8なので、8-xで反転
-            Position rPos = new Position(8 - d.position().x(), 8 - d.position().y());
-            return new DropAction(d.userId(), d.teamId(), d.pieceType(), rPos, d.at());
+            // 座標反転はCoordinateServiceにお任せ
+            Position rPos = coordinateService.normalize(d.position(), "SECOND");
+            
+            return new DropAction(
+                d.userId(), 
+                d.teamId(), 
+                d.pieceType(), 
+                rPos, 
+                d.at()
+            );
         }
         return action;
-    }
-
-    private String reverseDirString(String dir) {
-        try { return Direction.valueOf(dir).reverse().name(); } catch(Exception e) { return dir; }
     }
 }
