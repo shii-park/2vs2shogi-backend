@@ -114,7 +114,7 @@ public enum PieceType {
     /**
      * 竜王
      * 
-     * @return 縦横+斜め1マスs
+     * @return 縦横+斜め1マス
      */
     private static List<Direction> getPromotedRookMovement() {
         List<Direction> directions = new ArrayList<>(getRookMovement());
