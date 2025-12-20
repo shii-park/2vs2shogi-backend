@@ -9,10 +9,9 @@ import com.github.com.shii_park.shogi2vs2.model.enums.Direction;
  * 
  * @param applyDirections 成功した移動のリスト
  * @param capturedPieces  捕獲した駒のリスト
- * @param promoted        成ったかどうか
  * 
  * @author Suiren91
  */
-public record ApplyMoveResult(List<Direction> applyDirections, List<Piece> capturedPieces, boolean promoted) {
+public record ApplyMoveResult(List<Direction> applyDirections, List<Piece> capturedPieces) {
 
 }
