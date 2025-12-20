@@ -14,19 +14,12 @@ import com.github.com.shii_park.shogi2vs2.model.enums.Team;
  */
 class BoardFactoryTest {
 
-    private BoardFactory factory;
-
-    @BeforeEach
-    void setUp() {
-        factory = new BoardFactory();
-    }
-
     /**
      * 標準盤面が生成できることを確認
      */
     @Test
     void testCreateBoard() {
-        Board board = factory.createBoard();
+        Board board = BoardFactory.createBoard();
         assertNotNull(board);
     }
 
@@ -36,7 +29,7 @@ class BoardFactoryTest {
      */
     @Test
     void testFirstTeamFirstRow() {
-        Board board = factory.createBoard();
+        Board board = BoardFactory.createBoard();
         
         assertEquals(PieceType.LANCE, board.getTopPiece(new Position(1, 1)).getType());
         assertEquals(PieceType.KNIGHT, board.getTopPiece(new Position(2, 1)).getType());
@@ -60,7 +53,7 @@ class BoardFactoryTest {
      */
     @Test
     void testFirstTeamSecondRow() {
-        Board board = factory.createBoard();
+        Board board = BoardFactory.createBoard();
         
         assertEquals(PieceType.ROOK, board.getTopPiece(new Position(2, 2)).getType());
         assertEquals(Team.FIRST, board.getTopPiece(new Position(2, 2)).getTeam());
@@ -82,7 +75,7 @@ class BoardFactoryTest {
      */
     @Test
     void testFirstTeamThirdRow() {
-        Board board = factory.createBoard();
+        Board board = BoardFactory.createBoard();
         
         for (int x = 1; x <= 9; x++) {
             Piece piece = board.getTopPiece(new Position(x, 3));
@@ -98,7 +91,7 @@ class BoardFactoryTest {
      */
     @Test
     void testSecondTeamSeventhRow() {
-        Board board = factory.createBoard();
+        Board board = BoardFactory.createBoard();
         
         for (int x = 1; x <= 9; x++) {
             Piece piece = board.getTopPiece(new Position(x, 7));
@@ -114,7 +107,7 @@ class BoardFactoryTest {
      */
     @Test
     void testSecondTeamEighthRow() {
-        Board board = factory.createBoard();
+        Board board = BoardFactory.createBoard();
         
         assertEquals(PieceType.BISHOP, board.getTopPiece(new Position(2, 8)).getType());
         assertEquals(Team.SECOND, board.getTopPiece(new Position(2, 8)).getTeam());
@@ -136,7 +129,7 @@ class BoardFactoryTest {
      */
     @Test
     void testSecondTeamNinthRow() {
-        Board board = factory.createBoard();
+        Board board = BoardFactory.createBoard();
         
         assertEquals(PieceType.LANCE, board.getTopPiece(new Position(1, 9)).getType());
         assertEquals(PieceType.KNIGHT, board.getTopPiece(new Position(2, 9)).getType());
@@ -159,7 +152,7 @@ class BoardFactoryTest {
      */
     @Test
     void testEmptyMiddleRows() {
-        Board board = factory.createBoard();
+        Board board = BoardFactory.createBoard();
         
         for (int y = 4; y <= 6; y++) {
             for (int x = 1; x <= 9; x++) {
@@ -173,7 +166,7 @@ class BoardFactoryTest {
      */
     @Test
     void testPawnIdRange() {
-        Board board = factory.createBoard();
+        Board board = BoardFactory.createBoard();
         
         int minPawnId = Integer.MAX_VALUE;
         int maxPawnId = Integer.MIN_VALUE;
@@ -205,7 +198,7 @@ class BoardFactoryTest {
      */
     @Test
     void testLanceIdRange() {
-        Board board = factory.createBoard();
+        Board board = BoardFactory.createBoard();
         
         int minLanceId = Integer.MAX_VALUE;
         int maxLanceId = Integer.MIN_VALUE;
@@ -231,7 +224,7 @@ class BoardFactoryTest {
      */
     @Test
     void testKingIdRange() {
-        Board board = factory.createBoard();
+        Board board = BoardFactory.createBoard();
         
         Piece firstKing = board.getTopPiece(new Position(5, 1));
         Piece secondKing = board.getTopPiece(new Position(5, 9));
@@ -253,7 +246,7 @@ class BoardFactoryTest {
      */
     @Test
     void testPromotableFlags() {
-        Board board = factory.createBoard();
+        Board board = BoardFactory.createBoard();
         
         // 金将と王将は成れない
         assertFalse(board.getTopPiece(new Position(4, 1)).isPromotable());
@@ -274,7 +267,7 @@ class BoardFactoryTest {
      */
     @Test
     void testTotalPieceCount() {
-        Board board = factory.createBoard();
+        Board board = BoardFactory.createBoard();
         
         int count = 0;
         for (int y = 1; y <= 9; y++) {

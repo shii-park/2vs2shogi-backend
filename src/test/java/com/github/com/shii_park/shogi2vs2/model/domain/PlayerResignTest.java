@@ -23,8 +23,7 @@ class PlayerResignTest {
 
     @BeforeEach
     void setUp() {
-        BoardFactory factory = new BoardFactory();
-        board = factory.createBoard();
+        board = BoardFactory.createBoard();
 
         // FIRSTチームのプレイヤー（2人）
         player1 = new Player("p1", Team.FIRST);
