@@ -58,7 +58,7 @@ public class InputSynthesisService {
     }
 
     /**
-     * 強制回収
+     * Timeoutしたとき入力がそろってなくても強制回収
      */
     public List<GameAction> forceRetrieveInputs(String gameId, String teamId) {
         String inputKey = getKey(gameId, teamId);
@@ -72,7 +72,7 @@ public class InputSynthesisService {
         // データを取得
         List<String> jsonList = redisTemplate.opsForList().range(inputKey, 0, -1);
         
-        // ★掃除: 入力データだけでなく「投票者リスト」も消す
+        //  入力データだけでなく投票者リストも消す
         redisTemplate.delete(inputKey);
         redisTemplate.delete(votersKey);
 
