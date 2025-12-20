@@ -159,4 +159,14 @@ public class Game {
     public Board getBoard() {
         return board;
     }
+
+    /**
+     * プレイヤーのIdからPlayerインスタンスを返す
+     * 
+     * @param playerId 取得したいプレイヤーのid
+     * @return Player(存在しないときは{@code null})
+     */
+    public Player getPlayer(String playerId) {
+        return players.get(playerId);
+    }
 }
