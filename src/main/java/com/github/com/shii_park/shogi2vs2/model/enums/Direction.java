@@ -27,7 +27,8 @@ public enum Direction {
             case DOWN_LEFT -> UP_RIGHT;
             case KNIGHT_LEFT -> OPPO_KNIGHT_RIGHT;
             case KNIGHT_RIGHT -> OPPO_KNIGHT_LEFT;
-            default -> null;
+            case OPPO_KNIGHT_RIGHT -> KNIGHT_LEFT;
+            case OPPO_KNIGHT_LEFT -> KNIGHT_RIGHT;
         };
     }
 
@@ -36,7 +37,7 @@ public enum Direction {
      * Usage: Direction secondDir = dir.forTeam(Team.SECOND)
      * 
      * @param team 移動したいチーム
-     * @return FIRSTはそのまま、SECONDは反転した方向 (OPPO要素を渡すと{@code null})
+     * @return FIRSTはそのまま、SECONDは反転した方向
      */
     public Direction forTeam(Team team) {
         return team == Team.SECOND ? opposite() : this;
