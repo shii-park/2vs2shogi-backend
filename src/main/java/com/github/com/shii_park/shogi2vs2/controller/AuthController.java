@@ -17,22 +17,21 @@ import com.github.com.shii_park.shogi2vs2.dto.auth.LoginResponse;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/auth")//URL
-@CrossOrigin(origins = "${app.cors.allowed-origins}")//許可するオリジンは設定ファイルから取得する
+@RequestMapping("/api/auth") // URL
+@CrossOrigin(origins = "*") // 許可するオリジンは設定ファイルから取得する
 public class AuthController {
-    
+
     @Autowired
     private StringRedisTemplate redisTemplate;
 
     @PostMapping("/register")
-    public LoginResponse register(@RequestBody @Valid LoginRequest request){
-        String userId = UUID.randomUUID().toString(); //ランダムなユーザーID生成
+    public LoginResponse register(@RequestBody @Valid LoginRequest request) {
+        String userId = UUID.randomUUID().toString(); // ランダムなユーザーID生成
 
         redisTemplate.opsForValue().set(
-            "user:" + userId,
-            request.getUsername(),
-            Duration.ofHours(2)
-        );
+                "user:" + userId,
+                request.getUsername(),
+                Duration.ofHours(2));
 
         return new LoginResponse(userId, request.getUsername());
     }
