@@ -36,7 +36,7 @@ public class Game {
      * 
      * @param t 投了したプレイヤーのチーム
      */
-    private void handleResign(Team t) {
+    public void handleResign(Team t) {
         switch (t) {
             case FIRST:
                 winnerTeam = Team.SECOND;
