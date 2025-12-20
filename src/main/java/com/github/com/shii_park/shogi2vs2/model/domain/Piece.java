@@ -55,7 +55,7 @@ public class Piece {
     }
 
     /**
-     * 連続移動可能か
+     * 連続移動可能か判定する
      * 
      * @return {@code true}:連続移動可能
      */
