@@ -109,7 +109,7 @@ public class Game {
         });
         pendingPromote.forEach(piece -> {
             if (board.isInPromotionZone(board.find(piece), piece.getTeam())) {
-                piece.setPromoted(true);
+                board.promotePiece(piece);
             }
         });
         pendingDrops.forEach(drop -> {
