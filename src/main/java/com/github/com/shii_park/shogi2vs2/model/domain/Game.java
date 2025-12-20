@@ -92,7 +92,6 @@ public class Game {
             return;
         }
         pendingDrops.add(drop);
-        return;
     }
 
     /**
