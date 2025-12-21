@@ -16,7 +16,7 @@ import com.github.com.shii_park.shogi2vs2.model.domain.action.DropAction;
 import com.github.com.shii_park.shogi2vs2.model.domain.action.GameAction;
 import com.github.com.shii_park.shogi2vs2.model.domain.action.MoveAction;
 import com.github.com.shii_park.shogi2vs2.model.enums.Direction;
-import com.github.com.shii_park.shogi2vs2.model.enums.Team; // ★Teamを追加
+import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
 @Service
 public class NotificationService {
@@ -30,7 +30,7 @@ public class NotificationService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    // ゲーム開始
+    // ゲーム開始 (シンプル版に戻しました)
     public void broadcastGameStart(String gameId) {
         broadcastRaw(gameId, String.format("{\"type\":\"gameStart\",\"gameId\":\"%s\"}", gameId));
     }
@@ -110,6 +110,7 @@ public class NotificationService {
         }
     }
 
+    // ★★★ 復活させたヘルパーメソッド ★★★
     private void broadcastRaw(String gameId, String message) {
         List<WebSocketSession> sessions = webSocketHandler.getSessions(gameId);
         if (sessions == null) return;
@@ -122,26 +123,36 @@ public class NotificationService {
         }
     }
 
-    // --- 反転ロジック (Direction.forTeam を使用) ---
+    // --- 反転ロジック ---
 
     private TurnExecutionResult reverseResult(TurnExecutionResult original) {
         List<String> reversedDirs = new ArrayList<>();
-        for (String dStr : original.directions()) {
-            try {
-                // ★修正: Direction.forTeam(Team.SECOND) を使用
-                Direction dir = Direction.valueOf(dStr);
-                reversedDirs.add(dir.forTeam(Team.SECOND).name());
-            } catch (IllegalArgumentException e) {
-                reversedDirs.add(dStr);
+        if (original.directions() != null) {
+            for (String dStr : original.directions()) {
+                try {
+                    Direction dir = Direction.valueOf(dStr);
+                    reversedDirs.add(dir.forTeam(Team.SECOND).name());
+                } catch (IllegalArgumentException | NullPointerException e) {
+                    reversedDirs.add(dStr);
+                }
             }
         }
+
+        // 座標(Position)の反転
+        Position reversedPos = null;
+        if (original.position() != null) {
+            reversedPos = coordinateService.normalize(original.position(), "SECOND");
+        }
+
         return new TurnExecutionResult(
             original.type(), 
             original.pieceId(), 
             original.pieceType(),
             reversedDirs, 
             original.teamId(), 
-            original.promote()
+            original.promote(),
+            original.condition(),
+            reversedPos 
         );
     }
     
@@ -149,7 +160,6 @@ public class NotificationService {
         if (action instanceof MoveAction m) {
             List<Direction> rDirs = new ArrayList<>();
             for(Direction d : m.directions()) {
-                // ★修正: Direction.forTeam(Team.SECOND) を使用
                 rDirs.add(d.forTeam(Team.SECOND));
             }
             return new MoveAction(
@@ -163,7 +173,6 @@ public class NotificationService {
             );
 
         } else if (action instanceof DropAction d) {
-            // 座標反転はCoordinateServiceにお任せ
             Position rPos = coordinateService.normalize(d.position(), "SECOND");
             
             return new DropAction(
