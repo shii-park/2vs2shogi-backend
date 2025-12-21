@@ -75,10 +75,11 @@ public class Game {
 
         // 飛車、角行など、複数マス移動する駒は繰り返し実行する
         for (Direction dir : move.direction()) {
-            MoveResult res = board.moveOneStep(move.piece(), dir);
+            MoveStepResult stepResult = board.moveOneStepWithCapture(move.piece(), dir);
             appliedDirections.add(dir);
 
-            if (res == MoveResult.DROPPED) {
+            if (stepResult.result() == MoveResult.FELL) {
+                // 盤面外に落ちた場合
                 switch (move.player().getTeam()) {
                     case FIRST:
                         capturedPieces.capturedPiece(Team.SECOND, move.piece());
@@ -87,9 +88,12 @@ public class Game {
                         capturedPieces.capturedPiece(Team.FIRST, move.piece());
                 }
                 capturedPiecesList.add(move.piece());
-            } else if (res == MoveResult.CAPTURED) {
                 break;
-            } else if (res == MoveResult.STACKED) {
+            } else if (stepResult.result() == MoveResult.CAPTURED) {
+                // 敵の駒を捕獲した場合
+                capturedPiecesList.addAll(stepResult.capturedPieces());
+                break;
+            } else if (stepResult.result() == MoveResult.STACKED) {
                 board.stackPiece(board.find(move.piece()), move.piece());
                 break;
             }

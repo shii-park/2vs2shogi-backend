@@ -38,18 +38,24 @@ public class NotificationService {
     // ターン実行結果 (反転あり)
     public void broadcastTurnResult(String gameId, List<TurnExecutionResult> results) {
         List<WebSocketSession> sessions = webSocketHandler.getSessions(gameId);
-        if (sessions == null || sessions.isEmpty()) return;
+        if (sessions == null || sessions.isEmpty())
+            return;
 
         try {
+            // 1人目の配信
             String jsonNormal = objectMapper.writeValueAsString(results);
+            // TODO: nullなら例外
             TextMessage msgNormal = new TextMessage(String.format("{\"type\":\"moveResult\",\"data\":%s}", jsonNormal));
 
             List<TurnExecutionResult> reversedResults = new ArrayList<>();
             for (TurnExecutionResult res : results) {
                 reversedResults.add(reverseResult(res));
             }
+            // 2人目の配信
             String jsonReversed = objectMapper.writeValueAsString(reversedResults);
-            TextMessage msgReversed = new TextMessage(String.format("{\"type\":\"moveResult\",\"data\":%s}", jsonReversed));
+            // TODO: nullなら例外
+            TextMessage msgReversed = new TextMessage(
+                    String.format("{\"type\":\"moveResult\",\"data\":%s}", jsonReversed));
 
             for (WebSocketSession s : sessions) {
                 String userId = (String) s.getAttributes().get("userId");
@@ -68,7 +74,8 @@ public class NotificationService {
     // タイムアウト (反転あり)
     public void broadcastTimeout(String gameId, List<GameAction> pendingActions) {
         List<WebSocketSession> sessions = webSocketHandler.getSessions(gameId);
-        if (sessions == null || sessions.isEmpty()) return;
+        if (sessions == null || sessions.isEmpty())
+            return;
 
         try {
             String jsonNormal = objectMapper.writeValueAsString(pendingActions);
@@ -81,7 +88,8 @@ public class NotificationService {
                 }
             }
             String jsonReversed = objectMapper.writeValueAsString(reversedActions);
-            TextMessage msgReversed = new TextMessage(String.format("{\"type\":\"timeUp\", \"actions\":%s}", jsonReversed));
+            TextMessage msgReversed = new TextMessage(
+                    String.format("{\"type\":\"timeUp\", \"actions\":%s}", jsonReversed));
 
             for (WebSocketSession s : sessions) {
                 String userId = (String) s.getAttributes().get("userId");
@@ -99,26 +107,34 @@ public class NotificationService {
 
     public void sendToUser(String gameId, String userId, String message) {
         List<WebSocketSession> sessions = webSocketHandler.getSessions(gameId);
-        if (sessions == null) return;
-        
-        for(WebSocketSession s : sessions) {
-            if(userId.equals(s.getAttributes().get("userId"))) {
+        if (sessions == null)
+            return;
+
+        for (WebSocketSession s : sessions) {
+            if (userId.equals(s.getAttributes().get("userId"))) {
                 try {
-                    if (s.isOpen()) s.sendMessage(new TextMessage(message));
-                } catch(Exception e){ e.printStackTrace(); }
+                    if (s.isOpen())
+                        s.sendMessage(new TextMessage(message));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
 
     private void broadcastRaw(String gameId, String message) {
         List<WebSocketSession> sessions = webSocketHandler.getSessions(gameId);
-        if (sessions == null) return;
-        
+        if (sessions == null)
+            return;
+
         TextMessage textMessage = new TextMessage(message);
-        for(WebSocketSession s : sessions) {
+        for (WebSocketSession s : sessions) {
             try {
-                if (s.isOpen()) s.sendMessage(textMessage);
-            } catch(Exception e){ e.printStackTrace(); }
+                if (s.isOpen())
+                    s.sendMessage(textMessage);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -136,43 +152,40 @@ public class NotificationService {
             }
         }
         return new TurnExecutionResult(
-            original.type(), 
-            original.pieceId(), 
-            original.pieceType(),
-            reversedDirs, 
-            original.teamId(), 
-            original.promote()
-        );
+                original.type(),
+                original.pieceId(),
+                original.pieceType(),
+                reversedDirs,
+                original.teamId(),
+                original.promote());
     }
-    
+
     private GameAction reverseAction(GameAction action) {
         if (action instanceof MoveAction m) {
             List<Direction> rDirs = new ArrayList<>();
-            for(Direction d : m.directions()) {
+            for (Direction d : m.directions()) {
                 // ★修正: Direction.forTeam(Team.SECOND) を使用
                 rDirs.add(d.forTeam(Team.SECOND));
             }
             return new MoveAction(
-                m.userId(), 
-                m.teamId(), 
-                m.pieceId(), 
-                m.pieceType(), 
-                rDirs, 
-                m.promote(), 
-                m.at()
-            );
+                    m.userId(),
+                    m.teamId(),
+                    m.pieceId(),
+                    m.pieceType(),
+                    rDirs,
+                    m.promote(),
+                    m.at());
 
         } else if (action instanceof DropAction d) {
             // 座標反転はCoordinateServiceにお任せ
             Position rPos = coordinateService.normalize(d.position(), "SECOND");
-            
+
             return new DropAction(
-                d.userId(), 
-                d.teamId(), 
-                d.pieceType(), 
-                rPos, 
-                d.at()
-            );
+                    d.userId(),
+                    d.teamId(),
+                    d.pieceType(),
+                    rPos,
+                    d.at());
         }
         return action;
     }
