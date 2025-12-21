@@ -61,7 +61,7 @@ public class MatchingService {
         String statusVal = redisTemplate.opsForValue().get(statusKey);
 
         if(statusVal == null){
-            return new GameStatusResponse("NOT_QEUEUD",null);
+            return new GameStatusResponse("NOT_QUEUED",null);
         }
         if(statusVal.startsWith("MATCHED:")){
             String gameId = statusVal.split(":")[1];
