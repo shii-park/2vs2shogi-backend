@@ -1,4 +1,5 @@
 package com.github.com.shii_park.shogi2vs2.dto.auth;
 
-public record LoginResponse(String userId, String username) {
+//レコードクラスなのでこれで必要なものが全て実装できている
+public record LoginResponse(String sessionId, String username) {
 }

@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.github.com.shii_park.shogi2vs2.model.enums.Direction;
 import com.github.com.shii_park.shogi2vs2.model.enums.MoveResult;
+import com.github.com.shii_park.shogi2vs2.model.enums.PieceType;
 import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
 /**
@@ -223,23 +224,53 @@ public class Board {
      * @return 移動した結果を返す({@code DROPPED},{@code STACKED},{@code CAPTURED},{@code MOVED})
      */
     public MoveResult moveOneStep(Piece piece, Direction dir) {
+        MoveStepResult result = moveOneStepWithCapture(piece, dir);
+        return result.result();
+    }
+
+    /**
+     * {@code dir}の方向に駒を進め、捕獲した駒の情報も返す
+     * 
+     * @param piece 移動させる駒
+     * @param dir   移動させたい方向
+     * @return 移動結果と捕獲した駒のリスト
+     */
+    public MoveStepResult moveOneStepWithCapture(Piece piece, Direction dir) {
         Position newPos = find(piece).add(dir);
         if (!isInsideBoard(newPos)) {
-            return MoveResult.FELL;
+            return MoveStepResult.of(MoveResult.FELL);
         }
         Piece top = getTopPiece(newPos);
         if (top != null && top.getTeam() == piece.getTeam()) {
             movePiece(piece, newPos);
-            return MoveResult.STACKED;
+            return MoveStepResult.of(MoveResult.STACKED);
         }
         if (top != null && top.getTeam() != piece.getTeam()) {
-            captureAll(newPos, piece.getTeam());
+            List<Piece> captured = captureAll(newPos, piece.getTeam());
             movePiece(piece, newPos);
-            return MoveResult.CAPTURED;
+            return MoveStepResult.withCapture(MoveResult.CAPTURED, captured);
         }
         // ピース移動
         movePiece(piece, newPos);
 
-        return MoveResult.MOVED;
+        return MoveStepResult.of(MoveResult.MOVED);
     }
+
+    /**
+     * IDと種類から、盤上（または管理下）にある駒の実体を探す
+     * GameRoomServiceのMoveAction処理で使用
+     * @param id   駒のID
+     * @param type 駒の種類
+     * @return 見つかったPiece (なければnull)
+     */
+    public Piece getPiece(int id, PieceType type) {
+        // indexキーセット（盤上の全駒）から検索
+        for (Piece p : index.keySet()) {
+            if (p.getId() == id && p.getType() == type) {
+                return p;
+            }
+        }
+        return null;
+    }
+    
 }
