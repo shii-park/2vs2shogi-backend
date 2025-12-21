@@ -1,24 +1,34 @@
 package com.github.com.shii_park.shogi2vs2.dto.request;
 
-import com.github.com.shii_park.shogi2vs2.model.domain.Position;
+import java.util.List;
+import com.github.com.shii_park.shogi2vs2.model.enums.Direction;
 
 public class MoveRequest {
     private final String playerId;
-    private final Position from;
-    private final Position to;
+    private final int pieceId;
+    private final List<Direction> direction;
     private final boolean promote;
-    //public final long clientTurnId; //必要であれば追加
 
-    public MoveRequest(String playerId,Position from,Position to,boolean promote){
-        this.playerId=playerId;
-        this.from=from;
-        this.to=to;
-        this.promote=promote;
-        //clientTurnId使うなら追加
+    public MoveRequest(String playerId, int pieceId, List<Direction> direction, boolean promote) {
+        this.playerId = playerId;
+        this.pieceId = pieceId;
+        this.direction = direction;
+        this.promote = promote;
     }
 
-    public String getPlayerId() {return playerId;}
-    public Position getFrom() {return from;}
-    public Position getTo() {return to;}
-    public boolean isPromote() {return promote;}
+    public String getPlayerId() {
+        return playerId;
+    }
+
+    public int getPieceId() {
+        return pieceId;
+    }
+
+    public List<Direction> getDirection() {
+        return direction;
+    }
+
+    public boolean isPromote() {
+        return promote;
+    }
 }
