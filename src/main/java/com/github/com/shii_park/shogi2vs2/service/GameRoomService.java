@@ -144,10 +144,10 @@ public class GameRoomService {
             if (act instanceof MoveAction move) {
                 PieceType targetType = PieceType.valueOf(move.pieceType());
                 Piece piece = game.getBoard().getPiece(move.pieceId(), targetType);
-                
                 if (piece != null) {
                     PlayerMove moveCommand = new PlayerMove(player, piece, move.directions(), move.promote());
-                    game.applyMove(moveCommand);
+                    ApplyMoveResult res=game.applyMove(moveCommand);
+                    List<Piece>capturedPieces=res.capturedPieces();
                     // 通知用の結果データを作成
                     List<String> dirStrings = new ArrayList<>();
                     move.directions().forEach(d -> dirStrings.add(d.name()));
@@ -158,8 +158,23 @@ public class GameRoomService {
                         piece.getType().name(),
                         dirStrings,
                         player.getTeam().name(),
-                        move.promote()
+                        move.promote(),
+                        null,
+                        null
                     ));
+
+                    if(capturedPiece != null){
+                        result.add(new TurnExecutionResult(
+                            "capturedPiece",
+                            capturedPiece.getId(),
+                            capturedPiece.Type().name(),
+                            null,
+                            player.getTeam().name(),
+                            false,
+                            "TAKEN",
+                            null
+                        ));
+                    }
                 }
 
             } else if (act instanceof DropAction drop) {
@@ -191,12 +206,15 @@ public class GameRoomService {
                         pieceToDrop.getType().name(),
                         new ArrayList<>(),
                         player.getTeam().name(),
-                        false
+                        false,
+                        null,
+                        drop.position()
                     ));
                 }
             }
         }
         game.handleTurnEnd();
+        //TODO: ここでフロントに何かしら返却　
         notificationService.broadcastTurnResult(gameId, results);
     }
 
