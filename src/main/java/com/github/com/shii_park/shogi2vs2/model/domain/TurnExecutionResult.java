@@ -8,5 +8,7 @@ public record TurnExecutionResult(
     String pieceType,   // 追加: "FU", "HI" など
     List<String> directions, 
     String teamId,
-    boolean promote
+    boolean promote,
+    String Condition,    ///"TAKEN","FALLEN"
+    Position position
 ) {}
