@@ -16,15 +16,18 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import com.github.com.shii_park.shogi2vs2.service.GameManagementService; // ★追加
 import com.github.com.shii_park.shogi2vs2.service.GameRoomService;
 
 @Component
 public class GameWebSocketHandler extends TextWebSocketHandler {
 
-    // 循環参照回避のため @Lazy を付与
     @Autowired
     @Lazy
     private GameRoomService gameRoomService;
+
+    @Autowired
+    private GameManagementService gameManagementService; // ★追加: 予約確認用
 
     // ゲームIDごとにセッションのリストを管理するマップ
     private final Map<String, List<WebSocketSession>> gameSessions = new ConcurrentHashMap<>();
@@ -38,7 +41,9 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
         String gameId = params.get("gameId");
         String userId = params.get("userId");
 
-        if (gameId != null && userId != null) {
+        // ★修正: GameManagementServiceを使って、正当なプレイヤーか確認する
+        if (gameId != null && userId != null && gameManagementService.isValidPlayer(gameId, userId)) {
+            
             // セッションに属性として保存
             session.getAttributes().put("gameId", gameId);
             session.getAttributes().put("userId", userId);
@@ -49,11 +54,23 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
             // 4人揃ったらゲーム開始
             List<WebSocketSession> sessions = gameSessions.get(gameId);
+            
+            // 同時に複数の接続が来て size > 4 になるのを防ぐため、厳密に4人のときだけ発火させるのが安全
             if (sessions.size() == 4) {
-                System.out.println("Starting game: " + gameId);
-                gameRoomService.initializeGame(gameId, sessions);
+                System.out.println("All players connected. Starting game: " + gameId);
+                
+                // ★追加: 予約時の正しい並び順(チーム分け用)を取得
+                List<String> orderedUserIds = gameManagementService.getReservedPlayers(gameId);
+                
+                // ★修正: 引数に orderedUserIds を追加して呼び出す
+                gameRoomService.initializeGame(gameId, sessions, orderedUserIds);
+                
+                // メモリ節約のため予約情報は削除
+                gameManagementService.removePendingGame(gameId);
             }
         } else {
+            // 無効な接続（予約されていない、IDがない等）は切断
+            System.out.println("Invalid connection attempt: " + userId + " for game " + gameId);
             session.close(CloseStatus.BAD_DATA);
         }
     }
@@ -90,12 +107,14 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
                     gameSessions.remove(gameId);
                 }
             }
-            // 必要なら gameRoomService.leaveRoom(...) を呼ぶ
+            // ゲーム中の切断処理 (再接続や不戦敗など) があれば呼び出す
+            // gameRoomService.handleDisconnect(gameId, userId);
+            
             System.out.println("Disconnected: " + userId + " from " + gameId);
         }
     }
 
-    // --- 公開メソッド (NotificationServiceなどが使用) ---
+    // --- 公開メソッド ---
 
     public void addSession(String gameId, WebSocketSession session) {
         // computeIfAbsent でスレッドセーフにリスト作成
@@ -108,27 +127,24 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
     // --- 内部ヘルパー: URLクエリパラメータ解析 ---
     private Map<String, String> parseQuery(URI uri) {
-    Map<String, String> queryPairs = new ConcurrentHashMap<>();
-    String query = uri.getQuery();
-    
-    if (query != null) {
-        String[] pairs = query.split("&");
-        for (String pair : pairs) {
-            int idx = pair.indexOf("=");
-            if (idx > 0) {
-                // キーと値を取り出す
-                String key = pair.substring(0, idx);
-                String value = pair.substring(idx + 1);
+        Map<String, String> queryPairs = new ConcurrentHashMap<>();
+        String query = uri.getQuery();
+        
+        if (query != null) {
+            String[] pairs = query.split("&");
+            for (String pair : pairs) {
+                int idx = pair.indexOf("=");
+                if (idx > 0) {
+                    String key = pair.substring(0, idx);
+                    String value = pair.substring(idx + 1);
 
-                // ★ここでデコード（元の文字に戻す）処理を入れる
-                // StandardCharsets.UTF_8 を指定するのが一般的です
-                String decodedKey = URLDecoder.decode(key, StandardCharsets.UTF_8);
-                String decodedValue = URLDecoder.decode(value, StandardCharsets.UTF_8);
+                    String decodedKey = URLDecoder.decode(key, StandardCharsets.UTF_8);
+                    String decodedValue = URLDecoder.decode(value, StandardCharsets.UTF_8);
 
-                queryPairs.put(decodedKey, decodedValue);
+                    queryPairs.put(decodedKey, decodedValue);
+                }
             }
         }
-    }
-    return queryPairs;
+        return queryPairs;
     }
 }
