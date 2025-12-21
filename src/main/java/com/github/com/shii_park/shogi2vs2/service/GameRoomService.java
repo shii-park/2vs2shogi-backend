@@ -2,6 +2,7 @@ package com.github.com.shii_park.shogi2vs2.service;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,22 +50,27 @@ public class GameRoomService {
 
     private final Map<String, Game> games = new ConcurrentHashMap<>();
 
-    public void initializeGame(String gameId, List<WebSocketSession> players) {
-        gameContextService.assignTeam(gameId, (String) players.get(0).getAttributes().get("userId"), "FIRST");
-        gameContextService.assignTeam(gameId, (String) players.get(1).getAttributes().get("userId"), "FIRST");
-        gameContextService.assignTeam(gameId, (String) players.get(2).getAttributes().get("userId"), "SECOND");
-        gameContextService.assignTeam(gameId, (String) players.get(3).getAttributes().get("userId"), "SECOND");
-
-        for (WebSocketSession s : players) {
-            s.getAttributes().put("gameId", gameId);
-            webSocketHandler.addSession(gameId, s);
+    public void initializeGame(String gameId, List<WebSocketSession> connectedSessions, List<String> orderedUserIds) {
+        Map<String, WebSocketSession> sessionMap = new HashMap<>();
+        for (WebSocketSession s : connectedSessions) {
+            String uid = (String) s.getAttributes().get("userId");
+            sessionMap.put(uid, s);
         }
 
+        // orderedUserIds (予約順) に基づいてチーム割り当て
+        // 0,1番目 -> Team FIRST
+        // 2,3番目 -> Team SECOND
+        gameContextService.assignTeam(gameId, orderedUserIds.get(0), "FIRST");
+        gameContextService.assignTeam(gameId, orderedUserIds.get(1), "FIRST");
+        gameContextService.assignTeam(gameId, orderedUserIds.get(2), "SECOND");
+        gameContextService.assignTeam(gameId, orderedUserIds.get(3), "SECOND");
+
+        // Playerリスト作成
         List<Player> playerList = new ArrayList<>();
-        for (int i = 0; i < players.size(); i++) {
-            String userId = (String) players.get(i).getAttributes().get("userId");
+        for (int i = 0; i < 4; i++) {
+            String uid = orderedUserIds.get(i);
             Team team = (i < 2) ? Team.FIRST : Team.SECOND;
-            playerList.add(new Player(userId, team));
+            playerList.add(new Player(uid, team));
         }
 
         // Board作成 
