@@ -4,13 +4,26 @@ import java.time.Duration;
 import java.time.Instant;
 import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
+/**
+ * TurnManagerクラスはターンの管理を行うクラスです<br>
+ * 現在のターン番号、チーム、タイマーを管理し、ターンの進行や時間切れの判定を行います
+ */
 public class TurnManager {
+    /** 現在ターンのチーム */
     private volatile Team currentTeam;
+    /** 現在のターン番号 */
     private volatile int turnNumber = 0;
+    /** ターン開始時刻 */
     private volatile Instant turnTimer;
 
+    /** タイムアウト時間(秒) */
     private static final int TIMEOUT = 30;
 
+    /**
+     * TurnManagerクラスのコンストラクタ
+     * 
+     * @param firstTeam 最初のターンのチーム
+     */
     public TurnManager(Team firstTeam) {
         this.currentTeam = firstTeam;
         this.turnTimer = Instant.now();

@@ -13,25 +13,41 @@ import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PreDestroy;
 
+/**
+ * ゲームのターン時間を管理するサービス
+ * 各ゲームのターンタイマーの開始、停止、タイムアウト処理を担当
+ */
 @Service
 public class GameTimeService {
 
-    // 循環参照を防ぐため @Lazy をつけます
+    /**
+     * ゲームルームサービス
+     * 循環参照を防ぐため@Lazyを付与
+     */
     @Autowired
     @Lazy
     private GameRoomService gameRoomService;
 
-    // ゲームIDと「実行予定のタイマー」を紐づけるマップ
+    /**
+     * ゲームIDと実行予定のタイマーを紐づけるマップ
+     * key: gameId, value: ScheduledFuture
+     */
     private final Map<String, ScheduledFuture<?>> timers = new ConcurrentHashMap<>();
     
-    // タイマーを実行する裏方のスレッド（4つあれば十分）
+    /**
+     * タイマーを実行するスレッドプール
+     * 4つのスレッドで複数ゲームのタイマーを管理
+     */
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(4);
 
-    // 制限時間 (30秒)
+    /** ターンの制限時間（秒） */
     private static final int TURN_DURATION_SECONDS = 30;
 
     /**
      * 新しいターンのタイマーを開始する
+     * 前のターンのタイマーが残っている場合は停止してから新しいタイマーを開始
+     * 
+     * @param gameId ゲームID
      */
     public void startNewTurn(String gameId) {
         // 前のターンのタイマーが残っていたら消す
@@ -54,6 +70,9 @@ public class GameTimeService {
 
     /**
      * タイマーを止める
+     * 指定されたゲームのタイマーをキャンセルする
+     * 
+     * @param gameId ゲームID
      */
     public void stopTimer(String gameId) {
         ScheduledFuture<?> future = timers.remove(gameId);
@@ -63,6 +82,10 @@ public class GameTimeService {
         }
     }
 
+    /**
+     * サービス終了時のクリーンアップ処理
+     * スケジューラをシャットダウンし、実行中のタスクを適切に終了させる
+     */
     @PreDestroy
     public void cleanup() {
         System.out.println("Stopping timer scheduler...");

@@ -4,17 +4,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * PAWN:歩兵
- * LANCE:香車
- * KNIGHT:桂馬
- * SILVER:銀将
- * GOLD:金将
- * BISHOP:角行
- * ROOK:飛車
- * KING:王将
+ * 将棋の駒の種類を表すEnum
  */
 public enum PieceType {
-    PAWN, LANCE, KNIGHT, SILVER, GOLD, BISHOP, ROOK, KING;
+    /** 歩兵 */
+    PAWN,
+    /** 香車 */
+    LANCE,
+    /** 桂馬 */
+    KNIGHT,
+    /** 銀将 */
+    SILVER,
+    /** 金将 */
+    GOLD,
+    /** 角行 */
+    BISHOP,
+    /** 飛車 */
+    ROOK,
+    /** 王将 */
+    KING;
 
     /**
      * この駒の移動可能な方向のリストを返す

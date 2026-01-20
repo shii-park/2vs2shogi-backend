@@ -17,20 +17,32 @@ import com.github.com.shii_park.shogi2vs2.model.enums.Team;
  * @author Suiren91
  */
 public class Board {
+    /** 各マスにある駒のスタック */
     private final Map<Position, Stack<Piece>> pieces;
+    /** 駒から位置への逆引きインデックス */
     private final Map<Piece, Position> index;
+    /** 捕獲された駒の管理オブジェクト */
     private final CapturedPieces capturedPieces;
 
-    // 盤面の左下が(0,0)、右上が(8,8)
+    /** 盤面の最小座標 */
     private static final int BOARD_MIN = 1;
+    /** 盤面の最大座標 */
     private static final int BOARD_MAX = 9;
+    /** FIRSTチームの成りエリア(7行以上) */
     private static final int FIRST_PROMOTABLE_ZONE = 7;
+    /** SECONDチームの成りエリア(3行以下) */
     private static final int SECOND_PROMOTABLE_ZONE = 3;
 
+    /**
+     * Boardオブジェクトを初期化する
+     * 
+     * @param initialPieces 初期配置の駒と位置のマップ
+     */
     public Board(Map<Piece, Position> initialPieces) {
         this.pieces = new ConcurrentHashMap<>();
         this.index = new ConcurrentHashMap<>(initialPieces);
 
+        // 初期配置の駒をスタックに積む
         for (Map.Entry<Piece, Position> entry : initialPieces.entrySet()) {
             Piece piece = entry.getKey();
             Position pos = entry.getValue();
@@ -110,6 +122,7 @@ public class Board {
         List<Piece> captured = new ArrayList<>(stack);
         pieces.remove(pos);
 
+        // 捕獲した全ての駒を手駒に追加し、インデックスから削除
         for (Piece p : captured) {
             capturedPieces.capturedPiece(capturingTeam, p);
             index.remove(p);
@@ -237,20 +250,23 @@ public class Board {
      */
     public MoveStepResult moveOneStepWithCapture(Piece piece, Direction dir) {
         Position newPos = find(piece).add(dir);
+        // 盤面外に落ちた場合
         if (!isInsideBoard(newPos)) {
             return MoveStepResult.of(MoveResult.FELL);
         }
         Piece top = getTopPiece(newPos);
+        // 味方の駒の上に積む
         if (top != null && top.getTeam() == piece.getTeam()) {
             movePiece(piece, newPos);
             return MoveStepResult.of(MoveResult.STACKED);
         }
+        // 敵の駒を捕獲
         if (top != null && top.getTeam() != piece.getTeam()) {
             List<Piece> captured = captureAll(newPos, piece.getTeam());
             movePiece(piece, newPos);
             return MoveStepResult.withCapture(MoveResult.CAPTURED, captured);
         }
-        // ピース移動
+        // 空マスに移動
         movePiece(piece, newPos);
 
         return MoveStepResult.of(MoveResult.MOVED);
@@ -259,6 +275,7 @@ public class Board {
     /**
      * IDと種類から、盤上（または管理下）にある駒の実体を探す
      * GameRoomServiceのMoveAction処理で使用
+     * 
      * @param id   駒のID
      * @param type 駒の種類
      * @return 見つかったPiece (なければnull)

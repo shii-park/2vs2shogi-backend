@@ -11,7 +11,12 @@ import com.github.com.shii_park.shogi2vs2.model.enums.Direction;
  * @author Suiren91
  */
 public record Position(int x, int y) {
-    // Positionは移動する度に再生成
+    /**
+     * 指定された方向に移動した新しいPositionを返す
+     * 
+     * @param dir 移動方向
+     * @return 移動後の新しいPosition
+     */
     public Position add(Direction dir) {
         return new Position(this.x + dir.dx, this.y + dir.dy);
     }

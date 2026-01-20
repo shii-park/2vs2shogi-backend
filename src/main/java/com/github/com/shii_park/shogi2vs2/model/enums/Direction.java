@@ -1,20 +1,55 @@
 package com.github.com.shii_park.shogi2vs2.model.enums;
 
+/**
+ * 将棋盤上の移動方向を表すEnum
+ */
 public enum Direction {
-    UP(0, +1), DOWN(0, -1), LEFT(-1, 0), RIGHT(+1, 0), UP_RIGHT(+1, +1), UP_LEFT(-1,
-            +1),
-    DOWN_RIGHT(+1, -1), DOWN_LEFT(-1, -1),
-    // 桂馬用
-    KNIGHT_LEFT(-1, +2), KNIGHT_RIGHT(+1, +2), OPPO_KNIGHT_LEFT(-1, -2), OPPO_KNIGHT_RIGHT(+1, -2);
+    /** 上方向 */
+    UP(0, +1),
+    /** 下方向 */
+    DOWN(0, -1),
+    /** 左方向 */
+    LEFT(-1, 0),
+    /** 右方向 */
+    RIGHT(+1, 0),
+    /** 右上方向 */
+    UP_RIGHT(+1, +1),
+    /** 左上方向 */
+    UP_LEFT(-1, +1),
+    /** 右下方向 */
+    DOWN_RIGHT(+1, -1),
+    /** 左下方向 */
+    DOWN_LEFT(-1, -1),
+    /** 桂馬の左移動 */
+    KNIGHT_LEFT(-1, +2),
+    /** 桂馬の右移動 */
+    KNIGHT_RIGHT(+1, +2),
+    /** 相手側の桂馬の左移動 */
+    OPPO_KNIGHT_LEFT(-1, -2),
+    /** 相手側の桂馬の右移動 */
+    OPPO_KNIGHT_RIGHT(+1, -2);
 
+    /** X方向の移動量 */
     public final int dx;
+    /** Y方向の移動量 */
     public final int dy;
 
+    /**
+     * コンストラクタ
+     * 
+     * @param dx X方向の移動量
+     * @param dy Y方向の移動量
+     */
     Direction(int dx, int dy) {
         this.dx = dx;
         this.dy = dy;
     }
 
+    /**
+     * 反対方向を取得する
+     * 
+     * @return 反対方向
+     */
     private Direction opposite() {
         return switch (this) {
             case UP -> DOWN;
