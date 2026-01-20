@@ -9,8 +9,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
  * GameActionはゲーム内のアクション(移動・配置)を表す基底インターフェースです。
  * このインターフェースを実装することで、JSONのシリアライズ・デシリアライズ時に
  * actionTypeプロパティに基づいて適切な実装クラス(MoveAction/DropAction)に変換されます。
- * 
- * @author Suiren91
  */
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
