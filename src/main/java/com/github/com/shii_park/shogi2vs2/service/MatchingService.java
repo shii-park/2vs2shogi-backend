@@ -11,18 +11,41 @@ import org.springframework.stereotype.Service;
 
 import com.github.com.shii_park.shogi2vs2.dto.response.GameStatusResponse;
 
+/**
+ * プレイヤーのマッチング処理を管理するサービス
+ * キューへの参加、マッチング状態の確認、ゲーム作成などを行う
+ */
 @Service
 public class MatchingService {
+    /**
+     * Redisテンプレート
+     * マッチングキューと状態管理に使用
+     */
     @Autowired
     private StringRedisTemplate redisTemplate;
+    
+    /**
+     * ゲーム管理サービス
+     * マッチング成立時のゲーム作成に使用
+     */
     @Autowired
     private GameManagementService gameManagementService;
 
+    /** マッチングキューのRedisキー */
     private static final String MATCHING_QUEUE_KEY = "matching:queue";
+    
+    /** ユーザーマッチ状態のRedisキープレフィックス */
     private static final String USER_MATCH_STATUS_KEY_PREFIX = "matching:status:";
+    
+    /** ゲームあたりの必要プレイヤー数 */
     private static final int PLAYERS_PER_GAME = 4;
 
-    //マッチングキューにユーザを追加する
+    /**
+     * マッチングキューにユーザーを追加する
+     * ユーザーの状態を「WAITING」に設定し、マッチング処理を試みる
+     * 
+     * @param userId 参加するユーザーのID
+     */
     public void joinQueue(String userId){
         redisTemplate.opsForList().rightPush(MATCHING_QUEUE_KEY, userId);
         String statusKey = USER_MATCH_STATUS_KEY_PREFIX + userId;
@@ -32,7 +55,11 @@ public class MatchingService {
         tryMatchMaking();
     }
     
-    //人数がそろったらゲームを作成する
+    /**
+     * 人数が揃ったらゲームを作成する
+     * キューから必要人数分のプレイヤーを取り出し、ゲームを作成する
+     * スレッドセーフのためsynchronizedで同期化
+     */
     private synchronized void tryMatchMaking(){
         Long queueSize = redisTemplate.opsForList().size(MATCHING_QUEUE_KEY);
         if(queueSize != null && queueSize >= PLAYERS_PER_GAME){
@@ -55,7 +82,12 @@ public class MatchingService {
         }
     }
 
-    //ユーザがマッチング状況を確認する
+    /**
+     * ユーザーがマッチング状況を確認する
+     * 
+     * @param userId 確認するユーザーのID
+     * @return マッチング状態とゲームID（マッチング済みの場合）
+     */
     public GameStatusResponse checkStatus(String userId){
         String statusKey = USER_MATCH_STATUS_KEY_PREFIX + userId;
         String statusVal = redisTemplate.opsForValue().get(statusKey);

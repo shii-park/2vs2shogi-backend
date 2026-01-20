@@ -11,12 +11,24 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.com.shii_park.shogi2vs2.model.domain.action.GameAction;
 
+/**
+ * チーム内の複数プレイヤーからの入力を合成するサービス
+ * 各チームのプレイヤーからのアクション入力を受け付け、必要な人数が揃ったら取得する
+ */
 @Service
 public class InputSynthesisService {
 
+    /**
+     * Redisテンプレート
+     * アクション入力の一時保存に使用
+     */
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    /**
+     * JSONシリアライザ
+     * GameActionオブジェクトとJSON文字列の相互変換に使用
+     */
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -68,6 +80,13 @@ public class InputSynthesisService {
 
     // --- 内部ヘルパー ---
 
+    /**
+     * Redisからアクション入力を取得し、データを削除する
+     * 
+     * @param inputKey アクションリストのRedisキー
+     * @param votersKey 投票者セットのRedisキー
+     * @return 取得したアクションのリスト
+     */
     private List<GameAction> retrieveAndClear(String inputKey, String votersKey) {
         // データを取得
         List<String> jsonList = redisTemplate.opsForList().range(inputKey, 0, -1);
@@ -90,6 +109,13 @@ public class InputSynthesisService {
         return result;
     }
 
+    /**
+     * ゲームIDとチームIDからRedisキーを生成する
+     * 
+     * @param gameId ゲームID
+     * @param teamId チームID
+     * @return 生成されたRedisキー
+     */
     private String getKey(String gameId, String teamId) {
         return "game:" + gameId + ":team:" + teamId + ":inputs";
     }

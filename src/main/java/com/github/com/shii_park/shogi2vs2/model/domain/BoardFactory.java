@@ -15,7 +15,9 @@ import com.github.com.shii_park.shogi2vs2.model.enums.Team;
  */
 public class BoardFactory {
 
-    // ユーティリティクラスなのでインスタンス化を防ぐ
+    /**
+     * ユーティリティクラスなのでインスタンス化を防ぐ
+     */
     private BoardFactory() {
         throw new UnsupportedOperationException("Utility class");
     }
@@ -27,6 +29,7 @@ public class BoardFactory {
      */
     public static Board createBoard() {
         Map<Position, Piece> initialPieces = new HashMap<>();
+        // 各駒種の通し番号を管理
         int pawnNum = 1;
         int lanceNum = 1;
         int knightNum = 1;
@@ -76,7 +79,7 @@ public class BoardFactory {
         initialPieces.put(new Position(8, 9), new Piece(knightNum++, PieceType.KNIGHT, Team.SECOND, true));
         initialPieces.put(new Position(9, 9), new Piece(lanceNum++, PieceType.LANCE, Team.SECOND, true));
 
-        // Boardが要求する向きに変換（Piece -> Position）
+        // Boardが要求する形式に変換（Position -> Piece から Piece -> Position へ）
         Map<Piece, Position> pieceToPos = new HashMap<>();
         for (Map.Entry<Position, Piece> e : initialPieces.entrySet()) {
             pieceToPos.put(e.getValue(), e.getKey());

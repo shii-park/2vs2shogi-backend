@@ -17,9 +17,14 @@ import com.github.com.shii_park.shogi2vs2.model.enums.Team;
  * @author Suiren91
  */
 public class CapturedPieces {
+    /** 各チームの手駒マップ */
     private final Map<Team, List<Piece>> capturedPieces;
+    /** 勝利チーム(まだ決定していない場合はempty) */
     private Optional<Team> winnerTeam;
 
+    /**
+     * CapturedPiecesオブジェクトを初期化する
+     */
     public CapturedPieces() {
         capturedPieces = new ConcurrentHashMap<>();
         capturedPieces.put(Team.FIRST, Collections.synchronizedList(new ArrayList<>()));
@@ -59,6 +64,7 @@ public class CapturedPieces {
             return null;
         }
 
+        // 手駒リストから同じ種類の駒を探して取り出す
         synchronized (pieces) {
             for (int i = 0; i < pieces.size(); i++) {
                 Piece captured = pieces.get(i);
@@ -74,11 +80,14 @@ public class CapturedPieces {
     // TODO: winnerTeamを決める処理を別途追加
     /**
      * 駒を捕獲する
+     * 王将を捕獲した場合、勝利チームを設定する
+     * 捕獲した駒の成り状態を解除し、チームを変更する
      * 
      * @param team  捕獲するチーム
      * @param piece 捕獲する駒
      */
     public void capturedPiece(Team team, Piece piece) {
+        // 王将が捕獲された場合は勝利チームを設定
         if (piece.getType() == PieceType.KING) {
             winnerTeam = Optional.of(team);
         }

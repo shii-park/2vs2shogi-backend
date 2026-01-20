@@ -16,6 +16,10 @@ import com.github.com.shii_park.shogi2vs2.dto.auth.LoginResponse;
 
 import jakarta.validation.Valid;
 
+/**
+ * 認証機能を提供するコントローラー
+ * ユーザー登録などの認証関連のエンドポイントを管理する
+ */
 @RestController
 @RequestMapping("/api/auth") // URL
 @CrossOrigin(origins = "*") // TODO: 許可するオリジンを環境変数から取得
@@ -24,12 +28,22 @@ public class AuthController {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    /**
+     * ユーザー登録処理
+     * ユーザー名を受け取り、新しいユーザーIDを生成してRedisに保存する
+     * 
+     * @param request ユーザー名を含むログインリクエスト
+     * @return 生成されたユーザーIDとユーザー名を含むレスポンス
+     */
     @PostMapping("/register")
     public LoginResponse register(@RequestBody @Valid LoginRequest request) {
         System.out.println("[AuthController] 登録リクエストを受信しました。ユーザー名=" + request.getUsername());
-        String userId = UUID.randomUUID().toString(); // ランダムなユーザーID生成
+        
+        // ランダムなユーザーID生成
+        String userId = UUID.randomUUID().toString();
         System.out.println("[AuthController] ユーザーIDを生成しました。ユーザーID=" + userId);
 
+        // Redisにユーザー情報を保存(有効期限: 2時間)
         redisTemplate.opsForValue().set(
                 "user:" + userId,
                 request.getUsername(),

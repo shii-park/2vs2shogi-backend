@@ -18,6 +18,12 @@ public class Player {
     private boolean resign;
     private boolean connected;
 
+    /**
+     * Playerクラスのコンストラクタ
+     * 
+     * @param id プレイヤーid
+     * @param team 所属チーム
+     */
     public Player(String id, Team team) {
         this.id = id;
         this.team = team;
@@ -25,26 +31,56 @@ public class Player {
         this.resign = false;
     }
 
+    /**
+     * プレイヤーが接続しているかを返す
+     * 
+     * @return true:接続中
+     */
     public boolean isConnected() {
         return connected;
     }
 
+    /**
+     * プレイヤーの接続状態を設定する
+     * 
+     * @param v 接続状態
+     */
     public void setConnected(boolean v) {
         this.connected = v;
     }
 
+    /**
+     * プレイヤーのidを返す
+     * 
+     * @return プレイヤーid
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * プレイヤーの所属チームを返す
+     * 
+     * @return 所属チーム
+     */
     public Team getTeam() {
         return team;
     }
 
+    /**
+     * プレイヤーが投了したかを返す
+     * 
+     * @return true:投了済み
+     */
     public boolean isResign() {
         return resign;
     }
 
+    /**
+     * プレイヤーの投了状態を設定する
+     * 
+     * @param v 投了状態
+     */
     public void setResign(boolean v) {
         this.resign = v;
     }

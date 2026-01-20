@@ -19,6 +19,11 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import com.github.com.shii_park.shogi2vs2.service.GameManagementService; // ★追加
 import com.github.com.shii_park.shogi2vs2.service.GameRoomService;
 
+/**
+ * ゲーム用WebSocketハンドラー
+ * WebSocket接続の確立、メッセージの送受信、切断処理を管理する
+ * 4人のプレイヤーが揃ったらゲームを開始する
+ */
 @Component
 public class GameWebSocketHandler extends TextWebSocketHandler {
 
@@ -29,11 +34,16 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     @Autowired
     private GameManagementService gameManagementService; // ★追加: 予約確認用
 
-    // ゲームIDごとにセッションのリストを管理するマップ
+    /** ゲームIDごとにセッションのリストを管理するマップ */
     private final Map<String, List<WebSocketSession>> gameSessions = new ConcurrentHashMap<>();
 
     /**
-     * 接続確立時
+     * WebSocket接続が確立された時の処理
+     * クエリパラメータからgameIdとuserIdを取得し、正当なプレイヤーか検証する
+     * 4人のプレイヤーが揃った場合にゲームを開始する
+     * 
+     * @param session WebSocketセッション
+     * @throws Exception 処理中に発生した例外
      */
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -76,7 +86,12 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     }
 
     /**
-     * メッセージ受信時
+     * WebSocketメッセージを受信した時の処理
+     * 受信したメッセージをGameRoomServiceに転送して処理する
+     * 
+     * @param session WebSocketセッション
+     * @param message 受信したテキストメッセージ
+     * @throws Exception 処理中に発生した例外
      */
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
@@ -90,7 +105,12 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
     }
 
     /**
-     * 切断時
+     * WebSocket接続が切断された時の処理
+     * セッションをリストから削除し、空になった部屋を削除する
+     * 
+     * @param session WebSocketセッション
+     * @param status 切断のステータス
+     * @throws Exception 処理中に発生した例外
      */
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
@@ -116,16 +136,34 @@ public class GameWebSocketHandler extends TextWebSocketHandler {
 
     // --- 公開メソッド ---
 
+    /**
+     * 指定されたゲームにセッションを追加する
+     * スレッドセーフにリストを作成・追加する
+     * 
+     * @param gameId ゲームID
+     * @param session 追加するWebSocketセッション
+     */
     public void addSession(String gameId, WebSocketSession session) {
         // computeIfAbsent でスレッドセーフにリスト作成
         gameSessions.computeIfAbsent(gameId, k -> new CopyOnWriteArrayList<>()).add(session);
     }
 
+    /**
+     * 指定されたゲームのセッションリストを取得する
+     * 
+     * @param gameId ゲームID
+     * @return WebSocketセッションのリスト
+     */
     public List<WebSocketSession> getSessions(String gameId) {
         return gameSessions.get(gameId);
     }
 
-    // --- 内部ヘルパー: URLクエリパラメータ解析 ---
+    /**
+     * URIのクエリパラメータを解析してMapに変換する
+     * 
+     * @param uri 解析するURI
+     * @return パラメータ名と値のマップ
+     */
     private Map<String, String> parseQuery(URI uri) {
         Map<String, String> queryPairs = new ConcurrentHashMap<>();
         String query = uri.getQuery();

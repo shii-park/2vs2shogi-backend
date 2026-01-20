@@ -9,19 +9,42 @@ import com.github.com.shii_park.shogi2vs2.model.enums.Direction;
 import com.github.com.shii_park.shogi2vs2.model.enums.GameStatus;
 import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
+/**
+ * Gameクラスは2vs2将棋のゲーム全体を管理するクラスです<br>
+ * ゲームの進行、プレイヤー管理、盤面管理、勝敗判定などの主要なロジックを担当します
+ */
 public class Game {
+    /** ゲームid */
     private final String gameId;
+    /** プレイヤーのマップ(key:プレイヤーid, value:プレイヤー) */
     private final Map<String, Player> players = new HashMap<>();
+    /** 盤面 */
     private final Board board;
+    /** ゲームの状態 */
     private volatile GameStatus status = GameStatus.WAITING;
+    /** 勝利チーム */
     private Team winnerTeam;
+    /** 捕獲された駒の管理 */
     private CapturedPieces capturedPieces;
+    /** 待機中の手駒配置リスト */
     private final List<PlayerDropPiece> pendingDrops;
+    /** 待機中の成り駒リスト */
     private final List<Piece> pendingPromote;
+    /** ターン管理 */
     private TurnManager turnManager;
+    /** ターン内の駒移動結果リスト */
     private final List<ApplyMoveResult> turnMoveResults;
+    /** ターン内の手駒配置結果リスト */
     private final List<ApplyDropResult> turnDropResults;
 
+    /**
+     * Gameクラスのコンストラクタ
+     * 
+     * @param gameId ゲームid
+     * @param playersList プレイヤーのリスト
+     * @param board 盤面
+     * @param firstTeam 最初のターンのチーム
+     */
     public Game(String gameId, List<Player> playersList, Board board, Team firstTeam) {
         this.gameId = gameId;
         playersList.forEach(p -> players.put(p.getId(), p));
@@ -61,6 +84,7 @@ public class Game {
      * @return 適用結果(移動が無効な場合は{@code null})
      */
     public ApplyMoveResult applyMove(PlayerMove move) {
+        // 盤面の一番上の駒かチェック
         if (!board.isTop(move.piece())) {
             return null;
         }
@@ -73,13 +97,13 @@ public class Game {
         List<Direction> appliedDirections = new ArrayList<>();
         List<Piece> capturedPiecesList = new ArrayList<>();
 
-        // 飛車、角行など、複数マス移動する駒は繰り返し実行する
+        // 飛車、角行など、複数マス移動する駒は各方向への移動を繰り返し実行する
         for (Direction dir : move.direction()) {
             MoveStepResult stepResult = board.moveOneStepWithCapture(move.piece(), dir);
             appliedDirections.add(dir);
 
             if (stepResult.result() == MoveResult.FELL) {
-                // 盤面外に落ちた場合
+                // 盤面外に落ちた場合、相手チームの捕獲駒として登録
                 switch (move.player().getTeam()) {
                     case FIRST:
                         capturedPieces.capturedPiece(Team.SECOND, move.piece());
@@ -94,11 +118,13 @@ public class Game {
                 capturedPiecesList.addAll(stepResult.capturedPieces());
                 break;
             } else if (stepResult.result() == MoveResult.STACKED) {
+                // 味方の駒の上に乗った場合、積む
                 board.stackPiece(board.find(move.piece()), move.piece());
                 break;
             }
         }
 
+        // 成る指定がある場合、待機リストに追加
         if (move.promote()) {
             pendingPromote.add(move.piece());
         }
@@ -115,11 +141,13 @@ public class Game {
      * @return 配置予約の結果
      */
     public ApplyDropResult applyDrop(PlayerDropPiece drop) {
+        // 指定位置に既に駒がある場合は配置できない
         if (board.getTopPiece(drop.position()) != null) {
             ApplyDropResult result = new ApplyDropResult(false, drop.position(), drop.piece());
             turnDropResults.add(result);
             return result;
         }
+        // 配置可能な場合は待機リストに追加
         pendingDrops.add(drop);
         ApplyDropResult result = new ApplyDropResult(true, drop.position(), drop.piece());
         turnDropResults.add(result);
@@ -138,11 +166,13 @@ public class Game {
         List<Piece> promotedPieces = new ArrayList<>();
         List<Piece> placedPieces = new ArrayList<>();
 
+        // 王将が捕獲されていた場合、勝者を決定してゲームを終了
         capturedPieces.getWinnerTeam().ifPresent(team -> {
             winnerTeam = team;
             status = GameStatus.FINISHED;
         });
 
+        // 待機中の成りを処理(成れるゾーンにいる場合のみ成る)
         pendingPromote.forEach(piece -> {
             if (board.isInPromotionZone(board.find(piece), piece.getTeam())) {
                 board.promotePiece(piece);
@@ -150,6 +180,7 @@ public class Game {
             }
         });
 
+        // 待機中の手駒配置を処理
         pendingDrops.forEach(drop -> {
             Piece piece = capturedPieces.getCapturedPiece(drop.player().getTeam(), drop.piece());
             if (piece == null) {
@@ -159,7 +190,7 @@ public class Game {
             placedPieces.add(piece);
         });
 
-        // ターン中に蓄積された結果をコピー
+        // ターン中に蓄積された結果をコピーしてクリア
         List<ApplyMoveResult> moveResults = new ArrayList<>(turnMoveResults);
         List<ApplyDropResult> dropResults = new ArrayList<>(turnDropResults);
 
@@ -219,28 +250,28 @@ public class Game {
             return false;
         }
 
-        // 1. 各方向が移動可能な方向かチェック
+        // 各方向が移動可能な方向かチェック
         for (Direction dir : directions) {
             if (!piece.canMoveToDirection(dir)) {
                 return false;
             }
         }
 
-        // 2. 連続移動のチェック
+        // 連続移動のチェック
         if (directions.size() > 1) {
             // 連続移動可能な駒かチェック
             if (!piece.canMoveMultipleSteps()) {
                 return false;
             }
 
-            // 3. 各方向が連続移動可能な方向かチェック
+            // 各方向が連続移動可能な方向かチェック
             for (Direction dir : directions) {
                 if (!piece.canMoveMultipleStepsInDirection(dir)) {
                     return false;
                 }
             }
 
-            // 同じ方向への連続移動かチェック（飛車・角・香は同じ方向にのみ連続移動可）
+            // 同じ方向への連続移動かチェック(飛車・角・香は同じ方向にのみ連続移動可)
             Direction firstDir = directions.get(0);
             for (Direction dir : directions) {
                 if (dir != firstDir) {

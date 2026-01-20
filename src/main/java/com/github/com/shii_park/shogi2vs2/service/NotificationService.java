@@ -16,47 +16,78 @@ import com.github.com.shii_park.shogi2vs2.model.domain.action.DropAction;
 import com.github.com.shii_park.shogi2vs2.model.domain.action.GameAction;
 import com.github.com.shii_park.shogi2vs2.model.domain.action.MoveAction;
 import com.github.com.shii_park.shogi2vs2.model.enums.Direction;
-import com.github.com.shii_park.shogi2vs2.model.enums.Team; // ★Teamを追加
+import com.github.com.shii_park.shogi2vs2.model.enums.Team;
 
+/**
+ * WebSocket通知サービス
+ * ゲームイベントをWebSocketを通じて各プレイヤーに通知します。
+ * チームごとに座標や方向を反転させて配信します。
+ */
 @Service
 public class NotificationService {
 
+    /**
+     * ゲームコンテキストサービス
+     */
     @Autowired
     private GameContextService gameContextService;
+    
+    /**
+     * WebSocketハンドラー
+     */
     @Autowired
     private GameWebSocketHandler webSocketHandler;
+    
+    /**
+     * 座標変換サービス
+     */
     @Autowired
     private BoardCoordinateService coordinateService;
+    
+    /**
+     * JSONシリアライザー
+     */
     @Autowired
     private ObjectMapper objectMapper;
 
-    // ゲーム開始
+    /**
+     * ゲーム開始を全プレイヤーに通知します。
+     * 
+     * @param gameId ゲームID
+     */
     public void broadcastGameStart(String gameId) {
+        // ゲーム開始通知を全プレイヤーに配信
         broadcastRaw(gameId, String.format("{\"type\":\"gameStart\",\"gameId\":\"%s\"}", gameId));
     }
 
-    // ターン実行結果 (反転あり)
+    /**
+     * ターン実行結果を全プレイヤーに通知します。
+     * チームごとに座標と方向を反転させて配信します。
+     * 
+     * @param gameId ゲームID
+     * @param results ターン実行結果のリスト
+     */
     public void broadcastTurnResult(String gameId, List<TurnExecutionResult> results) {
+        // ゲームに参加している全セッションを取得
         List<WebSocketSession> sessions = webSocketHandler.getSessions(gameId);
         if (sessions == null || sessions.isEmpty())
             return;
 
         try {
-            // 1人目の配信
+            // FIRSTチーム用の通常メッセージを作成
             String jsonNormal = objectMapper.writeValueAsString(results);
-            // TODO: nullなら例外
             TextMessage msgNormal = new TextMessage(String.format("{\"type\":\"moveResult\",\"data\":%s}", jsonNormal));
 
+            // SECONDチーム用に座標と方向を反転したメッセージを作成
             List<TurnExecutionResult> reversedResults = new ArrayList<>();
             for (TurnExecutionResult res : results) {
                 reversedResults.add(reverseResult(res));
             }
-            // 2人目の配信
             String jsonReversed = objectMapper.writeValueAsString(reversedResults);
-            // TODO: nullなら例外
             TextMessage msgReversed = new TextMessage(
                     String.format("{\"type\":\"moveResult\",\"data\":%s}", jsonReversed));
 
+            // 各プレイヤーのチームに応じて適切なメッセージを送信
             for (WebSocketSession s : sessions) {
                 String userId = (String) s.getAttributes().get("userId");
                 String teamId = gameContextService.getUserTeam(gameId, userId);
@@ -71,16 +102,25 @@ public class NotificationService {
         }
     }
 
-    // タイムアウト (反転あり)
+    /**
+     * タイムアウトを全プレイヤーに通知します。
+     * 未実行のアクションと共に通知します。
+     * 
+     * @param gameId ゲームID
+     * @param pendingActions 未実行のアクションリスト
+     */
     public void broadcastTimeout(String gameId, List<GameAction> pendingActions) {
+        // ゲームに参加している全セッションを取得
         List<WebSocketSession> sessions = webSocketHandler.getSessions(gameId);
         if (sessions == null || sessions.isEmpty())
             return;
 
         try {
+            // FIRSTチーム用の通常メッセージを作成
             String jsonNormal = objectMapper.writeValueAsString(pendingActions);
             TextMessage msgNormal = new TextMessage(String.format("{\"type\":\"timeUp\", \"actions\":%s}", jsonNormal));
 
+            // SECONDチーム用にアクションを反転したメッセージを作成
             List<GameAction> reversedActions = new ArrayList<>();
             if (pendingActions != null) {
                 for (GameAction act : pendingActions) {
@@ -91,6 +131,7 @@ public class NotificationService {
             TextMessage msgReversed = new TextMessage(
                     String.format("{\"type\":\"timeUp\", \"actions\":%s}", jsonReversed));
 
+            // 各プレイヤーのチームに応じて適切なメッセージを送信
             for (WebSocketSession s : sessions) {
                 String userId = (String) s.getAttributes().get("userId");
                 String teamId = gameContextService.getUserTeam(gameId, userId);
@@ -105,11 +146,20 @@ public class NotificationService {
         }
     }
 
+    /**
+     * 特定のユーザーにメッセージを送信します。
+     * 
+     * @param gameId ゲームID
+     * @param userId ユーザーID
+     * @param message 送信するメッセージ
+     */
     public void sendToUser(String gameId, String userId, String message) {
+        // ゲームに参加している全セッションを取得
         List<WebSocketSession> sessions = webSocketHandler.getSessions(gameId);
         if (sessions == null)
             return;
 
+        // 指定されたユーザーのセッションを検索してメッセージを送信
         for (WebSocketSession s : sessions) {
             if (userId.equals(s.getAttributes().get("userId"))) {
                 try {
@@ -122,11 +172,20 @@ public class NotificationService {
         }
     }
 
+    /**
+     * 生のメッセージを全プレイヤーに配信します。
+     * 座標や方向の反転は行いません。
+     * 
+     * @param gameId ゲームID
+     * @param message 送信するメッセージ
+     */
     private void broadcastRaw(String gameId, String message) {
+        // ゲームに参加している全セッションを取得
         List<WebSocketSession> sessions = webSocketHandler.getSessions(gameId);
         if (sessions == null)
             return;
 
+        // 全セッションにメッセージを配信
         TextMessage textMessage = new TextMessage(message);
         for (WebSocketSession s : sessions) {
             try {
@@ -138,16 +197,22 @@ public class NotificationService {
         }
     }
 
-    // --- 反転ロジック (Direction.forTeam を使用) ---
-
+    /**
+     * ターン実行結果を反転します（SECONDチーム用）。
+     * 方向情報を180度回転させます。
+     * 
+     * @param original 元のターン実行結果
+     * @return 反転されたターン実行結果
+     */
     private TurnExecutionResult reverseResult(TurnExecutionResult original) {
+        // 方向情報をSECONDチーム用に反転
         List<String> reversedDirs = new ArrayList<>();
         for (String dStr : original.directions()) {
             try {
-                // ★修正: Direction.forTeam(Team.SECOND) を使用
                 Direction dir = Direction.valueOf(dStr);
                 reversedDirs.add(dir.forTeam(Team.SECOND).name());
             } catch (IllegalArgumentException e) {
+                // 無効な方向の場合はそのまま保持
                 reversedDirs.add(dStr);
             }
         }
@@ -160,11 +225,18 @@ public class NotificationService {
                 original.promote());
     }
 
+    /**
+     * ゲームアクションを反転します（SECONDチーム用）。
+     * 移動の場合は方向を、配置の場合は座標を反転させます。
+     * 
+     * @param action 元のゲームアクション
+     * @return 反転されたゲームアクション
+     */
     private GameAction reverseAction(GameAction action) {
         if (action instanceof MoveAction m) {
+            // 移動アクションの方向を反転
             List<Direction> rDirs = new ArrayList<>();
             for (Direction d : m.directions()) {
-                // ★修正: Direction.forTeam(Team.SECOND) を使用
                 rDirs.add(d.forTeam(Team.SECOND));
             }
             return new MoveAction(
@@ -177,7 +249,7 @@ public class NotificationService {
                     m.at());
 
         } else if (action instanceof DropAction d) {
-            // 座標反転はCoordinateServiceにお任せ
+            // 配置アクションの座標を反転
             Position rPos = coordinateService.normalize(d.position(), "SECOND");
 
             return new DropAction(
