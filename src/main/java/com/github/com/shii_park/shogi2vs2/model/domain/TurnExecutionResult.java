@@ -12,8 +12,6 @@ import java.util.List;
  * @param directions 移動方向のリスト(移動の場合)
  * @param teamId     実行したチームID
  * @param promote    成りが発生したかどうか
- * 
- * @author Suiren91
  */
 public record TurnExecutionResult(
     String type,
