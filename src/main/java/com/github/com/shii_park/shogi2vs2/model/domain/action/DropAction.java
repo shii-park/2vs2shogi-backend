@@ -12,8 +12,6 @@ import com.github.com.shii_park.shogi2vs2.model.domain.Position;
  * @param pieceType 配置する駒の種類("FU", "HI"など)
  * @param position  配置先の位置
  * @param at        アクションが実行された時刻
- * 
- * @author Suiren91
  */
 public record DropAction(
     String userId,
