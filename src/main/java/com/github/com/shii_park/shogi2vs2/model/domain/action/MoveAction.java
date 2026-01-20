@@ -15,8 +15,6 @@ import com.github.com.shii_park.shogi2vs2.model.enums.Direction;
  * @param directions 移動方向のリスト(複数ステップの移動をサポート)
  * @param promote    移動後に成るかどうか
  * @param at         アクションが実行された時刻
- * 
- * @author Suiren91
  */
 public record MoveAction(
     String userId, 
